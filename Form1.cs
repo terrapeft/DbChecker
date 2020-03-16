@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
@@ -23,6 +24,12 @@ namespace DbChecker
         public Form1()
         {
             InitializeComponent();
+
+            resultsDataGridView.DataError += (sender, args) =>
+            {
+                resultsTextbox.AppendText("DataGridView Error: " + args.Exception.Message + "\r\n");
+            };
+
             AddUsers();
             LoadHistory();
         }
@@ -99,13 +106,9 @@ namespace DbChecker
             cts = new CancellationTokenSource();
             var token = cts.Token;
 
-            var progressHandler = new Progress<string>(value =>
-            {
-                resultsTextbox.AppendText(value.ToString());
-            });
-
-            var progress = progressHandler as IProgress<string>;
             var sb = new StringBuilder();
+            var dt = new DataTable();
+            var count = 0;
 
             try
             {
@@ -125,33 +128,49 @@ namespace DbChecker
                         connection.Open();
                         using (var reader = cmd.ExecuteReader())
                         {
-                            var columnNames = Enumerable.Range(0, reader.FieldCount)
-                                .Select(reader.GetName)
-                                .ToList();
-
-                            sb.Append(string.Join(",", columnNames));
-                            sb.AppendLine();
-
-                            while (reader.Read())
+                            if (tabControl1.SelectedTab == tabPage2)
                             {
-                                token.ThrowIfCancellationRequested();
+                                dt.Load(reader);
+                                count = dt.Rows.Count;
+                            }
+                            else
+                            {
+                                var columnNames = Enumerable.Range(0, reader.FieldCount)
+                                    .Select(reader.GetName)
+                                    .ToList();
 
-                                for (var i = 0; i < reader.FieldCount; i++)
-                                {
-                                    var value = reader[i].ToString();
-                                    if (value.Contains(","))
-                                        value = "\"" + value + "\"";
-
-                                    sb.Append(value.Replace(Environment.NewLine, " ") + ",");
-                                }
-
-                                sb.Length--;
+                                sb.Append(string.Join(",", columnNames));
                                 sb.AppendLine();
+
+                                while (reader.Read())
+                                {
+                                    count++;
+                                    token.ThrowIfCancellationRequested();
+
+                                    for (var i = 0; i < reader.FieldCount; i++)
+                                    {
+                                        var value = reader[i].ToString();
+                                        if (value.Contains(","))
+                                            value = "\"" + value + "\"";
+
+                                        sb.Append(value.Replace(Environment.NewLine, " ") + ",");
+                                    }
+
+                                    sb.Length--;
+                                    sb.AppendLine();
+                                }
                             }
                         }
                     }
                 });
-                resultsTextbox.AppendText(sb.ToString());
+                resultsDataGridView.DataSource = dt;
+                if (sb.Length > 0)
+                {
+                    resultsTextbox.AppendText(sb.ToString());
+                    resultsTextbox.AppendText(Environment.NewLine);
+                }
+
+                resultsTextbox.AppendText($"Rows loaded: {count}");
                 resultsTextbox.AppendText(Environment.NewLine);
             }
             catch (OperationCanceledException)
