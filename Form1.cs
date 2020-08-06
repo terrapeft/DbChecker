@@ -11,14 +11,17 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using System.Xml.XPath;
+using Newtonsoft.Json;
 
 namespace DbChecker
 {
     public partial class Form1 : Form
     {
-        private const string delimiter = ">>>>>>>";
+        private string historyFile = "queries.json";
         private int historyPosition = 0;
-        List<string> historyList = new List<string>();
+        private List<string> historyList;
+        private bool ctrlK = false;
+        private DataTable gridTable;
         private CancellationTokenSource cts;
 
         public Form1()
@@ -36,47 +39,35 @@ namespace DbChecker
 
         private void LoadHistory()
         {
-            if (!File.Exists("queries.txt"))
+            if (!File.Exists(historyFile))
             {
-                File.CreateText("queries.txt").Close();
+                File.CreateText(historyFile).Close();
             }
 
-            var sb = new StringBuilder();
-            foreach (var line in File.ReadLines("queries.txt"))
-            {
-                if (line.Trim() != delimiter)
+            var json = File.ReadAllText(historyFile);
+            historyList = JsonConvert.DeserializeObject<List<string>>(json) ??
+                new List<string>
                 {
-                    sb.AppendLine(line);
-                }
-                else
-                {
-                    var query = sb.ToString().Trim();
-                    if (query.Length > 0)
-                    {
-                        historyList.Add(sb.ToString());
-                    }
-
-                    sb.Clear();
-                }
-            }
+                    "SELECT * FROM INFORMATION_SCHEMA.TABLES"
+                };
 
             if (historyList.Any())
-                queryTextbox.Text = historyList[0];
+                queryTextbox.Text = historyList[historyList.Count - 1];
         }
 
         private void SaveHistory()
         {
-            if (!checkBox1.Checked)
-                return;
-
             if (!historyList.Any(i => i.Trim().ToLower().Equals(queryTextbox.Text.Trim().ToLower())))
             {
-                File.AppendAllText(
-                    "queries.txt",
-                    $"{queryTextbox.Text}{Environment.NewLine}{delimiter}{Environment.NewLine}");
-
                 historyList.Add(queryTextbox.Text);
+                File.WriteAllText(historyFile, JsonConvert.SerializeObject(historyList));
             }
+        }
+
+        private void ClearHistory()
+        {
+            historyList.Remove(queryTextbox.Text);
+            File.WriteAllText(historyFile, JsonConvert.SerializeObject(historyList));
         }
 
         private void AddUsers()
@@ -89,6 +80,26 @@ namespace DbChecker
             connStrComboBox.Focus();
 
             connStrComboBox.SelectedIndex = Convert.ToInt32(ConfigurationManager.AppSettings.Get("lastConnStrPosition"));
+        }
+
+        private void Comment()
+        {
+            if (!string.IsNullOrWhiteSpace(queryTextbox.SelectedText))
+            {
+                var lines = queryTextbox.SelectedText.Split(new [] {Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries);
+                var t = string.Join(Environment.NewLine, lines.Select(l => "--" + l));
+                queryTextbox.Text = queryTextbox.Text.Replace(queryTextbox.SelectedText, t);
+            }
+        }
+
+        private void Uncomment()
+        {
+            if (!string.IsNullOrWhiteSpace(queryTextbox.SelectedText))
+            {
+                var lines = queryTextbox.SelectedText.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                var t = string.Join(Environment.NewLine, lines.Select(l => l.TrimStart('-')));
+                queryTextbox.Text = queryTextbox.Text.Replace(queryTextbox.SelectedText, t);
+            }
         }
 
         #region Event handlers
@@ -107,7 +118,7 @@ namespace DbChecker
             var token = cts.Token;
 
             var sb = new StringBuilder();
-            var dt = new DataTable();
+            gridTable = new DataTable();
             var count = 0;
 
             try
@@ -116,13 +127,15 @@ namespace DbChecker
                 runButton.Tag = "cancel";
                 progressBar1.Visible = true;
 
+                var startedAt = DateTime.Now;
+
                 await Task.Run(() =>
                 {
                     var connStr = connStrTextBox.Text ??
                                   ((ConnectionStringSettings)connStrComboBox.SelectedItem).ConnectionString;
                     using (var connection = new SqlConnection(connStr))
                     {
-                        var cmd = new SqlCommand(queryTextbox.Text, connection);
+                        var cmd = new SqlCommand(queryTextbox.SelectionLength > 0 ? queryTextbox.SelectedText : queryTextbox.Text, connection);
                         cmd.CommandTimeout = 3600;
 
                         connection.Open();
@@ -130,8 +143,9 @@ namespace DbChecker
                         {
                             if (tabControl1.SelectedTab == tabPage2)
                             {
-                                dt.Load(reader);
-                                count = dt.Rows.Count;
+                                gridTable.Load(reader);
+                                count = gridTable.Rows.Count;
+                                saveResultsButton.Enabled = true;
                             }
                             else
                             {
@@ -163,14 +177,14 @@ namespace DbChecker
                         }
                     }
                 });
-                resultsDataGridView.DataSource = dt;
+                resultsDataGridView.DataSource = gridTable;
                 if (sb.Length > 0)
                 {
                     resultsTextbox.AppendText(sb.ToString());
                     resultsTextbox.AppendText(Environment.NewLine);
                 }
 
-                resultsTextbox.AppendText($"Rows loaded: {count}");
+                resultsTextbox.AppendText($"Rows loaded: {count}, elapsed time: {(DateTime.Now - startedAt):g}");
                 resultsTextbox.AppendText(Environment.NewLine);
             }
             catch (OperationCanceledException)
@@ -203,35 +217,59 @@ namespace DbChecker
 
         private void queryTextbox_KeyUp(object sender, KeyEventArgs e)
         {
-            if (!historyList.Any()) return;
-
-            if (e.Modifiers == Keys.Alt && e.KeyCode == Keys.Right)
+            if (e.KeyCode == Keys.F5)
             {
-                if (historyPosition == historyList.Count - 1)
-                {
-                    historyPosition = 0;
-                }
-                else
-                {
-                    historyPosition++;
-                }
-
-                queryTextbox.Text = historyList[historyPosition];
+                runButton_Click(sender, e);
             }
 
-            if (e.Modifiers == Keys.Alt && e.KeyCode == Keys.Left)
+            if (e.Modifiers == Keys.Control && e.KeyCode == Keys.K)
             {
-                if (historyPosition == 0)
+                ctrlK = true;
+                return; // skip "falsefication"
+            }
+
+            if (e.Modifiers == Keys.Control && e.KeyCode == Keys.C && ctrlK)
+            {
+                Comment();
+            }
+
+            if (e.Modifiers == Keys.Control && e.KeyCode == Keys.U && ctrlK)
+            {
+                Uncomment();
+            }
+
+            if (historyList.Any())
+            {
+                if (e.Modifiers == Keys.Alt && e.KeyCode == Keys.Right)
                 {
-                    historyPosition = historyList.Count - 1;
-                }
-                else
-                {
-                    historyPosition--;
+                    if (historyPosition == historyList.Count - 1)
+                    {
+                        historyPosition = 0;
+                    }
+                    else
+                    {
+                        historyPosition++;
+                    }
+
+                    queryTextbox.Text = historyList[historyPosition];
                 }
 
-                queryTextbox.Text = historyList[historyPosition];
+                if (e.Modifiers == Keys.Alt && e.KeyCode == Keys.Left)
+                {
+                    if (historyPosition == 0)
+                    {
+                        historyPosition = historyList.Count - 1;
+                    }
+                    else
+                    {
+                        historyPosition--;
+                    }
+
+                    queryTextbox.Text = historyList[historyPosition];
+                }
             }
+
+            ctrlK = false;
         }
 
         private void saveButton_Click(object sender, EventArgs e)
@@ -262,9 +300,10 @@ namespace DbChecker
 
         private void wipeHistoryButton_Click(object sender, EventArgs e)
         {
-            File.Delete("queries.txt");
-            File.Create("queries.txt").Close();
+            File.Delete(historyFile);
             historyList.Clear();
+
+            LoadHistory();
         }
 
         private void deleteButton_Click(object sender, EventArgs e)
@@ -282,5 +321,37 @@ namespace DbChecker
         }
 
         #endregion
+
+        private void saveQueryButton_Click(object sender, EventArgs e)
+        {
+            SaveHistory();
+        }
+
+        private void deleteQueryButton_Click(object sender, EventArgs e)
+        {
+            ClearHistory();
+        }
+
+        private void saveResultsButton_Click(object sender, EventArgs e)
+        {
+            if (tabControl1.SelectedTab == tabPage2)
+            {
+                if (gridTable != null && gridTable.Rows.Count > 0)
+                {
+                    if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+                    {
+                        resultsDataGridView.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableAlwaysIncludeHeaderText;
+                        resultsDataGridView.RowHeadersVisible = true;
+                        resultsDataGridView.SelectAll();
+
+                        var dataObject = resultsDataGridView.GetClipboardContent();
+                        if (dataObject != null)
+                        {
+                            File.WriteAllText(saveFileDialog1.FileName, dataObject.GetData("Csv") as string);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
