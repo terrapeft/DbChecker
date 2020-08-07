@@ -18,6 +18,7 @@ namespace DbChecker
     public partial class Form1 : Form
     {
         private string historyFile = "queries.json";
+        private string historyFileName = "queries";
         private int historyPosition = 0;
         private List<string> historyList;
         private bool ctrlK = false;
@@ -52,7 +53,12 @@ namespace DbChecker
                 };
 
             if (historyList.Any())
+            {
+                historyPosition = historyList.Count - 1;
                 queryTextbox.Text = historyList[historyList.Count - 1];
+            }
+
+            historyPositionLabel.Text = $"{historyPosition + 1}/{historyList.Count}";
         }
 
         private void SaveHistory()
@@ -60,14 +66,63 @@ namespace DbChecker
             if (!historyList.Any(i => i.Trim().ToLower().Equals(queryTextbox.Text.Trim().ToLower())))
             {
                 historyList.Add(queryTextbox.Text);
+                historyPosition = historyList.Count - 1;
                 File.WriteAllText(historyFile, JsonConvert.SerializeObject(historyList));
+                RefreshPosition();
             }
         }
 
         private void ClearHistory()
         {
-            historyList.Remove(queryTextbox.Text);
+            historyList.RemoveAt(historyPosition);
             File.WriteAllText(historyFile, JsonConvert.SerializeObject(historyList));
+
+            RefreshPosition();
+        }
+
+        private void RefreshPosition()
+        {
+            if (historyPosition == historyList.Count)
+            {
+                historyPosition--;
+            }
+
+            queryTextbox.Text = historyList[historyPosition];
+            historyPositionLabel.Text = $"{historyPosition + 1}/{historyList.Count}";
+        }
+
+        private void GoLeft()
+        {
+            if (historyPosition == 0)
+            {
+                historyPosition = historyList.Count - 1;
+            }
+            else
+            {
+                historyPosition--;
+            }
+
+            RefreshPosition();
+        }
+
+        private void GoRight()
+        {
+            if (historyPosition == historyList.Count - 1)
+            {
+                historyPosition = 0;
+            }
+            else
+            {
+                historyPosition++;
+            }
+
+            RefreshPosition();
+        }
+
+        private void GoLast()
+        {
+            historyPosition = historyList.Count - 1;
+            RefreshPosition();
         }
 
         private void AddUsers()
@@ -129,6 +184,8 @@ namespace DbChecker
 
                 var startedAt = DateTime.Now;
 
+                resultsTextbox.AppendText($"Started at {startedAt:g}.{Environment.NewLine}");
+
                 await Task.Run(() =>
                 {
                     var connStr = connStrTextBox.Text ??
@@ -141,39 +198,47 @@ namespace DbChecker
                         connection.Open();
                         using (var reader = cmd.ExecuteReader())
                         {
-                            if (tabControl1.SelectedTab == tabPage2)
-                            {
-                                gridTable.Load(reader);
-                                count = gridTable.Rows.Count;
-                                saveResultsButton.Enabled = true;
-                            }
-                            else
-                            {
-                                var columnNames = Enumerable.Range(0, reader.FieldCount)
-                                    .Select(reader.GetName)
-                                    .ToList();
+                            var resultCount = 0;
 
-                                sb.Append(string.Join(",", columnNames));
-                                sb.AppendLine();
+                            do
+                            {
+                                if (reader.FieldCount > 0)
+                                    resultCount++;
 
-                                while (reader.Read())
+                                if (tabControl1.SelectedTab == tabPage2) // multiple result sets are not supported by gridTable.Load
                                 {
-                                    count++;
-                                    token.ThrowIfCancellationRequested();
-
-                                    for (var i = 0; i < reader.FieldCount; i++)
-                                    {
-                                        var value = reader[i].ToString();
-                                        if (value.Contains(","))
-                                            value = "\"" + value + "\"";
-
-                                        sb.Append(value.Replace(Environment.NewLine, " ") + ",");
-                                    }
-
-                                    sb.Length--;
-                                    sb.AppendLine();
+                                    gridTable.Load(reader);
+                                    count = gridTable.Rows.Count;
+                                    saveResultsButton.Enabled = true;
                                 }
-                            }
+                                else
+                                {
+                                    var columnNames = Enumerable.Range(0, reader.FieldCount)
+                                        .Select(reader.GetName)
+                                        .ToList();
+
+                                    sb.Append(string.Join(",", columnNames));
+                                    sb.AppendLine();
+
+                                    while (reader.Read())
+                                    {
+                                        count++;
+                                        token.ThrowIfCancellationRequested();
+
+                                        for (var i = 0; i < reader.FieldCount; i++)
+                                        {
+                                            var value = reader[i].ToString();
+                                            if (value.Contains(","))
+                                                value = "\"" + value + "\"";
+
+                                            sb.Append(value.Replace(Environment.NewLine, " ") + ",");
+                                        }
+
+                                        sb.Length--;
+                                        sb.AppendLine();
+                                    }
+                                }
+                            } while (!reader.IsClosed && reader.NextResult());
                         }
                     }
                 });
@@ -242,35 +307,19 @@ namespace DbChecker
             {
                 if (e.Modifiers == Keys.Alt && e.KeyCode == Keys.Right)
                 {
-                    if (historyPosition == historyList.Count - 1)
-                    {
-                        historyPosition = 0;
-                    }
-                    else
-                    {
-                        historyPosition++;
-                    }
-
-                    queryTextbox.Text = historyList[historyPosition];
+                    GoRight();
                 }
 
                 if (e.Modifiers == Keys.Alt && e.KeyCode == Keys.Left)
                 {
-                    if (historyPosition == 0)
-                    {
-                        historyPosition = historyList.Count - 1;
-                    }
-                    else
-                    {
-                        historyPosition--;
-                    }
-
-                    queryTextbox.Text = historyList[historyPosition];
+                    GoLeft();
                 }
             }
 
             ctrlK = false;
         }
+
+
 
         private void saveButton_Click(object sender, EventArgs e)
         {
@@ -300,8 +349,12 @@ namespace DbChecker
 
         private void wipeHistoryButton_Click(object sender, EventArgs e)
         {
+            var backup = $"_backup_{DateTime.Now:yyyy_MM_dd_hh_mm_ss}.json";
+            File.Copy(historyFile, $"{historyFileName}{backup}");
             File.Delete(historyFile);
             historyList.Clear();
+
+            resultsTextbox.AppendText($"Backup saved to: {historyFileName}{backup}{Environment.NewLine}");
 
             LoadHistory();
         }
@@ -352,6 +405,31 @@ namespace DbChecker
                     }
                 }
             }
+        }
+
+        private void rightHistoryButton_Click(object sender, EventArgs e)
+        {
+            GoRight();
+        }
+
+        private void leftHistoryButton_Click(object sender, EventArgs e)
+        {
+            GoLeft();
+        }
+
+        private void lastHistoryButton_Click(object sender, EventArgs e)
+        {
+            GoLast();
+        }
+
+        private void toolStripPanel1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void progressBar1_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
