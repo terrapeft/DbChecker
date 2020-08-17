@@ -32,7 +32,6 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.connStrComboBox = new System.Windows.Forms.ComboBox();
             this.resultsTextbox = new System.Windows.Forms.TextBox();
-            this.runButton = new System.Windows.Forms.Button();
             this.connStrTextBox = new System.Windows.Forms.TextBox();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.queryTextbox = new FastColoredTextBoxNS.FastColoredTextBox();
@@ -41,20 +40,24 @@
             this.resultsDataGridView = new System.Windows.Forms.DataGridView();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.saveButton = new System.Windows.Forms.Button();
             this.wipeHistoryButton = new System.Windows.Forms.Button();
-            this.deleteButton = new System.Windows.Forms.Button();
-            this.saveQueryButton = new System.Windows.Forms.Button();
             this.deleteQueryButton = new System.Windows.Forms.Button();
-            this.saveResultsButton = new System.Windows.Forms.Button();
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
-            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.rightHistoryButton = new System.Windows.Forms.Button();
             this.leftHistoryButton = new System.Windows.Forms.Button();
             this.lastHistoryButton = new System.Windows.Forms.Button();
+            this.firstHistoryButton = new System.Windows.Forms.Button();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.statusBar1 = new System.Windows.Forms.StatusBar();
             this.historyPositionLabel = new System.Windows.Forms.StatusBarPanel();
-            this.firstHistoryButton = new System.Windows.Forms.Button();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.runStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveConnStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.deleteConnToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveQueryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.importCSVToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveResultsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -65,6 +68,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.resultsDataGridView)).BeginInit();
             this.tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.historyPositionLabel)).BeginInit();
+            this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // connStrComboBox
@@ -72,9 +76,9 @@
             this.connStrComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.connStrComboBox.FormattingEnabled = true;
-            this.connStrComboBox.Location = new System.Drawing.Point(12, 12);
+            this.connStrComboBox.Location = new System.Drawing.Point(12, 33);
             this.connStrComboBox.Name = "connStrComboBox";
-            this.connStrComboBox.Size = new System.Drawing.Size(892, 21);
+            this.connStrComboBox.Size = new System.Drawing.Size(973, 21);
             this.connStrComboBox.TabIndex = 0;
             this.connStrComboBox.SelectedIndexChanged += new System.EventHandler(this.connStrComboBox_SelectedIndexChanged);
             // 
@@ -85,32 +89,18 @@
             this.resultsTextbox.Multiline = true;
             this.resultsTextbox.Name = "resultsTextbox";
             this.resultsTextbox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.resultsTextbox.Size = new System.Drawing.Size(777, 302);
+            this.resultsTextbox.Size = new System.Drawing.Size(959, 315);
             this.resultsTextbox.TabIndex = 3;
-            // 
-            // runButton
-            // 
-            this.runButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.runButton.BackColor = System.Drawing.Color.PaleGreen;
-            this.runButton.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.runButton.Location = new System.Drawing.Point(910, 10);
-            this.runButton.Name = "runButton";
-            this.runButton.Size = new System.Drawing.Size(75, 23);
-            this.runButton.TabIndex = 4;
-            this.runButton.Text = "Run query";
-            this.toolTip1.SetToolTip(this.runButton, "Run the query or selection (F5)");
-            this.runButton.UseVisualStyleBackColor = false;
-            this.runButton.Click += new System.EventHandler(this.runButton_Click);
             // 
             // connStrTextBox
             // 
             this.connStrTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.connStrTextBox.Location = new System.Drawing.Point(12, 39);
+            this.connStrTextBox.Location = new System.Drawing.Point(12, 60);
             this.connStrTextBox.Multiline = true;
             this.connStrTextBox.Name = "connStrTextBox";
             this.connStrTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.connStrTextBox.Size = new System.Drawing.Size(892, 48);
+            this.connStrTextBox.Size = new System.Drawing.Size(973, 48);
             this.connStrTextBox.TabIndex = 5;
             // 
             // splitContainer1
@@ -118,7 +108,7 @@
             this.splitContainer1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.splitContainer1.Location = new System.Drawing.Point(12, 93);
+            this.splitContainer1.Location = new System.Drawing.Point(12, 114);
             this.splitContainer1.Name = "splitContainer1";
             this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
@@ -131,8 +121,8 @@
             // 
             this.splitContainer1.Panel2.Controls.Add(this.tabControl1);
             this.splitContainer1.Panel2.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.splitContainer1.Size = new System.Drawing.Size(892, 589);
-            this.splitContainer1.SplitterDistance = 223;
+            this.splitContainer1.Size = new System.Drawing.Size(973, 564);
+            this.splitContainer1.SplitterDistance = 213;
             this.splitContainer1.TabIndex = 6;
             // 
             // queryTextbox
@@ -149,14 +139,17 @@
         '\'',
         '\''};
             this.queryTextbox.AutoIndentCharsPatterns = "";
-            this.queryTextbox.AutoScrollMinSize = new System.Drawing.Size(191, 14);
+            this.queryTextbox.AutoScrollMinSize = new System.Drawing.Size(39, 14);
             this.queryTextbox.BackBrush = null;
             this.queryTextbox.CharHeight = 14;
             this.queryTextbox.CharWidth = 8;
             this.queryTextbox.CommentPrefix = "--";
+            this.queryTextbox.CurrentPenSize = 3;
             this.queryTextbox.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.queryTextbox.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
             this.queryTextbox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.queryTextbox.DocumentPath = null;
+            this.queryTextbox.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.queryTextbox.IsReplaceMode = false;
             this.queryTextbox.Language = FastColoredTextBoxNS.Language.SQL;
             this.queryTextbox.LeftBracket = '(';
@@ -165,12 +158,13 @@
             this.queryTextbox.Name = "queryTextbox";
             this.queryTextbox.Paddings = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.queryTextbox.RightBracket = ')';
+            this.queryTextbox.SelectionChangedDelayedEnabled = false;
             this.queryTextbox.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(255)))));
             this.queryTextbox.ServiceColors = ((FastColoredTextBoxNS.ServiceColors)(resources.GetObject("queryTextbox.ServiceColors")));
-            this.queryTextbox.Size = new System.Drawing.Size(892, 223);
+            this.queryTextbox.Size = new System.Drawing.Size(973, 213);
             this.queryTextbox.TabIndex = 3;
-            this.queryTextbox.Text = "fastColoredTextBox1";
             this.queryTextbox.Zoom = 100;
+            this.queryTextbox.TextChangedDelayed += new System.EventHandler<FastColoredTextBoxNS.TextChangedEventArgs>(this.queryTextbox_TextChangedDelayed);
             this.queryTextbox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.queryTextbox_KeyUp);
             // 
             // tabControl1
@@ -181,7 +175,7 @@
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(892, 362);
+            this.tabControl1.Size = new System.Drawing.Size(973, 347);
             this.tabControl1.TabIndex = 4;
             // 
             // tabPage2
@@ -190,7 +184,7 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(884, 336);
+            this.tabPage2.Size = new System.Drawing.Size(965, 321);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Results";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -206,7 +200,7 @@
             this.resultsDataGridView.Name = "resultsDataGridView";
             this.resultsDataGridView.ReadOnly = true;
             this.resultsDataGridView.RowHeadersWidth = 51;
-            this.resultsDataGridView.Size = new System.Drawing.Size(878, 330);
+            this.resultsDataGridView.Size = new System.Drawing.Size(959, 315);
             this.resultsDataGridView.TabIndex = 0;
             // 
             // tabPage1
@@ -215,24 +209,10 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(783, 308);
+            this.tabPage1.Size = new System.Drawing.Size(965, 321);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Messages";
             this.tabPage1.UseVisualStyleBackColor = true;
-            // 
-            // saveButton
-            // 
-            this.saveButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.saveButton.BackColor = System.Drawing.Color.LightSteelBlue;
-            this.saveButton.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.saveButton.Location = new System.Drawing.Point(910, 37);
-            this.saveButton.Name = "saveButton";
-            this.saveButton.Size = new System.Drawing.Size(75, 23);
-            this.saveButton.TabIndex = 8;
-            this.saveButton.Text = "Save conn";
-            this.toolTip1.SetToolTip(this.saveButton, "Add or update connection string");
-            this.saveButton.UseVisualStyleBackColor = false;
-            this.saveButton.Click += new System.EventHandler(this.saveButton_Click);
             // 
             // wipeHistoryButton
             // 
@@ -248,34 +228,6 @@
             this.wipeHistoryButton.UseVisualStyleBackColor = false;
             this.wipeHistoryButton.Click += new System.EventHandler(this.wipeHistoryButton_Click);
             // 
-            // deleteButton
-            // 
-            this.deleteButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.deleteButton.BackColor = System.Drawing.Color.LightSteelBlue;
-            this.deleteButton.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.deleteButton.Location = new System.Drawing.Point(910, 64);
-            this.deleteButton.Name = "deleteButton";
-            this.deleteButton.Size = new System.Drawing.Size(75, 23);
-            this.deleteButton.TabIndex = 10;
-            this.deleteButton.Text = "Delete conn";
-            this.toolTip1.SetToolTip(this.deleteButton, "Delete connection string except those from machine.config");
-            this.deleteButton.UseVisualStyleBackColor = false;
-            this.deleteButton.Click += new System.EventHandler(this.deleteButton_Click);
-            // 
-            // saveQueryButton
-            // 
-            this.saveQueryButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.saveQueryButton.BackColor = System.Drawing.Color.Wheat;
-            this.saveQueryButton.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.saveQueryButton.Location = new System.Drawing.Point(910, 93);
-            this.saveQueryButton.Name = "saveQueryButton";
-            this.saveQueryButton.Size = new System.Drawing.Size(75, 23);
-            this.saveQueryButton.TabIndex = 11;
-            this.saveQueryButton.Text = "Save query";
-            this.toolTip1.SetToolTip(this.saveQueryButton, "Save query to history");
-            this.saveQueryButton.UseVisualStyleBackColor = false;
-            this.saveQueryButton.Click += new System.EventHandler(this.saveQueryButton_Click);
-            // 
             // deleteQueryButton
             // 
             this.deleteQueryButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
@@ -289,33 +241,6 @@
             this.toolTip1.SetToolTip(this.deleteQueryButton, "Delete query from history");
             this.deleteQueryButton.UseVisualStyleBackColor = false;
             this.deleteQueryButton.Click += new System.EventHandler(this.deleteQueryButton_Click);
-            // 
-            // saveResultsButton
-            // 
-            this.saveResultsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.saveResultsButton.BackColor = System.Drawing.Color.LightPink;
-            this.saveResultsButton.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.saveResultsButton.Location = new System.Drawing.Point(910, 645);
-            this.saveResultsButton.Name = "saveResultsButton";
-            this.saveResultsButton.Size = new System.Drawing.Size(83, 23);
-            this.saveResultsButton.TabIndex = 13;
-            this.saveResultsButton.Text = "Save Results";
-            this.toolTip1.SetToolTip(this.saveResultsButton, "Add or update connection string");
-            this.saveResultsButton.UseVisualStyleBackColor = false;
-            this.saveResultsButton.Click += new System.EventHandler(this.saveResultsButton_Click);
-            // 
-            // progressBar1
-            // 
-            this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar1.Location = new System.Drawing.Point(19, 684);
-            this.progressBar1.MarqueeAnimationSpeed = 1;
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(881, 10);
-            this.progressBar1.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
-            this.progressBar1.TabIndex = 3;
-            this.progressBar1.Visible = false;
-            this.progressBar1.Click += new System.EventHandler(this.progressBar1_Click);
             // 
             // rightHistoryButton
             // 
@@ -359,6 +284,36 @@
             this.lastHistoryButton.UseVisualStyleBackColor = false;
             this.lastHistoryButton.Click += new System.EventHandler(this.lastHistoryButton_Click);
             // 
+            // firstHistoryButton
+            // 
+            this.firstHistoryButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.firstHistoryButton.BackColor = System.Drawing.SystemColors.ButtonFace;
+            this.firstHistoryButton.DialogResult = System.Windows.Forms.DialogResult.OK;
+            this.firstHistoryButton.Location = new System.Drawing.Point(197, 698);
+            this.firstHistoryButton.Name = "firstHistoryButton";
+            this.firstHistoryButton.Size = new System.Drawing.Size(29, 20);
+            this.firstHistoryButton.TabIndex = 20;
+            this.firstHistoryButton.Text = "<<";
+            this.toolTip1.SetToolTip(this.firstHistoryButton, "Delete history from file");
+            this.firstHistoryButton.UseVisualStyleBackColor = false;
+            this.firstHistoryButton.Click += new System.EventHandler(this.firstHistoryButton_Click);
+            // 
+            // progressBar1
+            // 
+            this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.progressBar1.Location = new System.Drawing.Point(12, 684);
+            this.progressBar1.MarqueeAnimationSpeed = 1;
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(973, 10);
+            this.progressBar1.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+            this.progressBar1.TabIndex = 3;
+            this.progressBar1.Visible = false;
+            // 
+            // saveFileDialog1
+            // 
+            this.saveFileDialog1.Filter = "CSV|*.csv";
+            // 
             // statusBar1
             // 
             this.statusBar1.Location = new System.Drawing.Point(0, 697);
@@ -376,22 +331,75 @@
             this.historyPositionLabel.Text = "0/0";
             this.historyPositionLabel.Width = 200;
             // 
-            // firstHistoryButton
+            // openFileDialog1
             // 
-            this.firstHistoryButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.firstHistoryButton.BackColor = System.Drawing.SystemColors.ButtonFace;
-            this.firstHistoryButton.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.firstHistoryButton.Location = new System.Drawing.Point(197, 698);
-            this.firstHistoryButton.Name = "firstHistoryButton";
-            this.firstHistoryButton.Size = new System.Drawing.Size(29, 20);
-            this.firstHistoryButton.TabIndex = 20;
-            this.firstHistoryButton.Text = "<<";
-            this.toolTip1.SetToolTip(this.firstHistoryButton, "Delete history from file");
-            this.firstHistoryButton.UseVisualStyleBackColor = false;
+            this.openFileDialog1.FileName = "openFileDialog1";
+            // 
+            // menuStrip1
+            // 
+            this.menuStrip1.BackColor = System.Drawing.SystemColors.ControlDark;
+            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.runStripMenuItem,
+            this.saveConnStripMenuItem,
+            this.deleteConnToolStripMenuItem,
+            this.saveQueryToolStripMenuItem,
+            this.importCSVToolStripMenuItem,
+            this.saveResultsToolStripMenuItem});
+            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip1.Name = "menuStrip1";
+            this.menuStrip1.Size = new System.Drawing.Size(997, 24);
+            this.menuStrip1.TabIndex = 22;
+            // 
+            // runStripMenuItem
+            // 
+            this.runStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
+            this.runStripMenuItem.Name = "runStripMenuItem";
+            this.runStripMenuItem.Size = new System.Drawing.Size(40, 20);
+            this.runStripMenuItem.Text = "Run";
+            this.runStripMenuItem.Click += new System.EventHandler(this.runButton_Click);
+            // 
+            // saveConnStripMenuItem
+            // 
+            this.saveConnStripMenuItem.BackColor = System.Drawing.Color.White;
+            this.saveConnStripMenuItem.Name = "saveConnStripMenuItem";
+            this.saveConnStripMenuItem.Size = new System.Drawing.Size(75, 20);
+            this.saveConnStripMenuItem.Text = "Save Conn";
+            this.saveConnStripMenuItem.Click += new System.EventHandler(this.saveButton_Click);
+            // 
+            // deleteConnToolStripMenuItem
+            // 
+            this.deleteConnToolStripMenuItem.BackColor = System.Drawing.Color.White;
+            this.deleteConnToolStripMenuItem.Name = "deleteConnToolStripMenuItem";
+            this.deleteConnToolStripMenuItem.Size = new System.Drawing.Size(84, 20);
+            this.deleteConnToolStripMenuItem.Text = "Delete Conn";
+            this.deleteConnToolStripMenuItem.Click += new System.EventHandler(this.deleteButton_Click);
+            // 
+            // saveQueryToolStripMenuItem
+            // 
+            this.saveQueryToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(224)))), ((int)(((byte)(192)))));
+            this.saveQueryToolStripMenuItem.Name = "saveQueryToolStripMenuItem";
+            this.saveQueryToolStripMenuItem.Size = new System.Drawing.Size(78, 20);
+            this.saveQueryToolStripMenuItem.Text = "Save Query";
+            this.saveQueryToolStripMenuItem.Click += new System.EventHandler(this.saveQueryButton_Click);
+            // 
+            // importCSVToolStripMenuItem
+            // 
+            this.importCSVToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
+            this.importCSVToolStripMenuItem.Name = "importCSVToolStripMenuItem";
+            this.importCSVToolStripMenuItem.Size = new System.Drawing.Size(79, 20);
+            this.importCSVToolStripMenuItem.Text = "Import CSV";
+            this.importCSVToolStripMenuItem.Click += new System.EventHandler(this.csvButton_Click);
+            // 
+            // saveResultsToolStripMenuItem
+            // 
+            this.saveResultsToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.saveResultsToolStripMenuItem.Name = "saveResultsToolStripMenuItem";
+            this.saveResultsToolStripMenuItem.Size = new System.Drawing.Size(83, 20);
+            this.saveResultsToolStripMenuItem.Text = "Save Results";
+            this.saveResultsToolStripMenuItem.Click += new System.EventHandler(this.saveResultsButton_Click);
             // 
             // Form1
             // 
-            this.AcceptButton = this.runButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(997, 718);
@@ -399,18 +407,14 @@
             this.Controls.Add(this.lastHistoryButton);
             this.Controls.Add(this.leftHistoryButton);
             this.Controls.Add(this.rightHistoryButton);
-            this.Controls.Add(this.saveResultsButton);
             this.Controls.Add(this.deleteQueryButton);
-            this.Controls.Add(this.saveQueryButton);
-            this.Controls.Add(this.deleteButton);
             this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.wipeHistoryButton);
-            this.Controls.Add(this.saveButton);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.connStrTextBox);
-            this.Controls.Add(this.runButton);
             this.Controls.Add(this.connStrComboBox);
             this.Controls.Add(this.statusBar1);
+            this.Controls.Add(this.menuStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
             this.Text = "Database Lookup";
@@ -425,6 +429,8 @@
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.historyPositionLabel)).EndInit();
+            this.menuStrip1.ResumeLayout(false);
+            this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -434,21 +440,16 @@
 
         private System.Windows.Forms.ComboBox connStrComboBox;
         private System.Windows.Forms.TextBox resultsTextbox;
-        private System.Windows.Forms.Button runButton;
         private System.Windows.Forms.TextBox connStrTextBox;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.ToolTip toolTip1;
-        private System.Windows.Forms.Button saveButton;
         private System.Windows.Forms.Button wipeHistoryButton;
-        private System.Windows.Forms.Button deleteButton;
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.DataGridView resultsDataGridView;
-        private System.Windows.Forms.Button saveQueryButton;
         private System.Windows.Forms.Button deleteQueryButton;
-        private System.Windows.Forms.Button saveResultsButton;
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
         private FastColoredTextBoxNS.FastColoredTextBox queryTextbox;
         private System.Windows.Forms.Button rightHistoryButton;
@@ -457,6 +458,14 @@
         private System.Windows.Forms.StatusBar statusBar1;
         private System.Windows.Forms.StatusBarPanel historyPositionLabel;
         private System.Windows.Forms.Button firstHistoryButton;
+        private System.Windows.Forms.OpenFileDialog openFileDialog1;
+        private System.Windows.Forms.MenuStrip menuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem runStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveConnStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem deleteConnToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveQueryToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem importCSVToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveResultsToolStripMenuItem;
     }
 }
 

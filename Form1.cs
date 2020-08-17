@@ -12,6 +12,8 @@ using System.Windows.Forms;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using Newtonsoft.Json;
+using CsvHelper;
+using FastColoredTextBoxNS;
 
 namespace DbChecker
 {
@@ -24,6 +26,7 @@ namespace DbChecker
         private bool ctrlK = false;
         private DataTable gridTable;
         private CancellationTokenSource cts;
+        private bool changed = false;
 
         public Form1()
         {
@@ -55,15 +58,21 @@ namespace DbChecker
             if (historyList.Any())
             {
                 historyPosition = historyList.Count - 1;
-                queryTextbox.Text = historyList[historyList.Count - 1];
+                queryTextbox.Text = historyList[historyPosition];
             }
 
             historyPositionLabel.Text = $"{historyPosition + 1}/{historyList.Count}";
         }
 
-        private void SaveHistory()
+        private void SaveHistory(bool update = false)
         {
-            if (!historyList.Any(i => i.Trim().ToLower().Equals(queryTextbox.Text.Trim().ToLower())))
+            if (update)
+            {
+                historyList[historyPosition] = queryTextbox.Text;
+                File.WriteAllText(historyFile, JsonConvert.SerializeObject(historyList));
+                RefreshPosition();
+            }
+            else if (!historyList.Any(i => i.Trim().ToLower().Equals(queryTextbox.Text.Trim().ToLower())))
             {
                 historyList.Add(queryTextbox.Text);
                 historyPosition = historyList.Count - 1;
@@ -74,7 +83,7 @@ namespace DbChecker
 
         private void ClearHistory()
         {
-            historyList.RemoveAt(historyPosition);
+            historyList.RemoveAt(historyPosition--);
             File.WriteAllText(historyFile, JsonConvert.SerializeObject(historyList));
 
             RefreshPosition();
@@ -82,13 +91,20 @@ namespace DbChecker
 
         private void RefreshPosition()
         {
-            if (historyPosition == historyList.Count)
+            if (historyPosition < 0)
             {
-                historyPosition--;
+                historyPosition = 0;
+            }
+
+            if (historyPosition >= historyList.Count)
+            {
+                historyPosition = historyList.Count - 1;
             }
 
             queryTextbox.Text = historyList[historyPosition];
             historyPositionLabel.Text = $"{historyPosition + 1}/{historyList.Count}";
+            Text = Text.Trim('*');
+            changed = false;
         }
 
         private void GoLeft()
@@ -119,6 +135,12 @@ namespace DbChecker
             RefreshPosition();
         }
 
+        private void GoFirst()
+        {
+            historyPosition = 0;
+            RefreshPosition();
+        }
+
         private void GoLast()
         {
             historyPosition = historyList.Count - 1;
@@ -141,7 +163,7 @@ namespace DbChecker
         {
             if (!string.IsNullOrWhiteSpace(queryTextbox.SelectedText))
             {
-                var lines = queryTextbox.SelectedText.Split(new [] {Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries);
+                var lines = queryTextbox.SelectedText.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
                 var t = string.Join(Environment.NewLine, lines.Select(l => "--" + l));
                 queryTextbox.Text = queryTextbox.Text.Replace(queryTextbox.SelectedText, t);
             }
@@ -161,7 +183,7 @@ namespace DbChecker
 
         private async void runButton_Click(object sender, EventArgs e)
         {
-            if (runButton.Tag == "cancel")
+            if (runStripMenuItem.Tag == "cancel")
             {
                 cts?.Cancel();
                 return;
@@ -178,8 +200,8 @@ namespace DbChecker
 
             try
             {
-                runButton.Text = "Cancel";
-                runButton.Tag = "cancel";
+                runStripMenuItem.Text = "Cancel";
+                runStripMenuItem.Tag = "cancel";
                 progressBar1.Visible = true;
 
                 var startedAt = DateTime.Now;
@@ -209,7 +231,7 @@ namespace DbChecker
                                 {
                                     gridTable.Load(reader);
                                     count = gridTable.Rows.Count;
-                                    saveResultsButton.Enabled = true;
+                                    saveResultsToolStripMenuItem.Enabled = true;
                                 }
                                 else
                                 {
@@ -264,8 +286,13 @@ namespace DbChecker
                 resultsTextbox.AppendText(Environment.NewLine);
             }
 
-            runButton.Text = "Run";
-            runButton.Tag = string.Empty;
+            if (gridTable.Rows.Count == 0)
+            {
+                tabControl1.SelectedTab = tabPage1;
+            }
+
+            runStripMenuItem.Text = "Run";
+            runStripMenuItem.Tag = string.Empty;
             progressBar1.Visible = false;
         }
 
@@ -285,6 +312,12 @@ namespace DbChecker
             if (e.KeyCode == Keys.F5)
             {
                 runButton_Click(sender, e);
+            }
+
+            if (e.Modifiers == Keys.Control && e.KeyCode == Keys.S)
+            {
+                saveQueryButton_Click(null, null);
+                return; // skip "falsefication"
             }
 
             if (e.Modifiers == Keys.Control && e.KeyCode == Keys.K)
@@ -326,7 +359,7 @@ namespace DbChecker
             var connStrName = (connStrComboBox.SelectedItem as ConnectionStringSettings)?.Name ?? connStrComboBox.Text;
             if (connStrName != null)
             {
-                var doc = XDocument.Load(ConfigurationManager.AppSettings.Get("config"));
+                var doc = XDocument.Load("connections.config");
                 var connStrs = doc.XPathSelectElement("//connectionStrings");
                 var connStr = doc.XPathSelectElement($"//connectionStrings/add[@name='{connStrName}']");
                 if (connStr == null)
@@ -341,7 +374,7 @@ namespace DbChecker
                     connStr.SetAttributeValue("connectionString", connStrTextBox.Text);
                 }
 
-                doc.Save(ConfigurationManager.AppSettings.Get("config"));
+                doc.Save("connections.config");
                 AddUsers();
                 connStrComboBox.SelectedIndex = connStrComboBox.FindStringExact(connStrName);
             }
@@ -364,7 +397,7 @@ namespace DbChecker
             var connStrName = (connStrComboBox.SelectedItem as ConnectionStringSettings)?.Name ?? connStrComboBox.Text;
             if (connStrName != null)
             {
-                var doc = XDocument.Load(ConfigurationManager.AppSettings.Get("config"));
+                var doc = XDocument.Load("connections.config");
                 var connStr = doc.XPathSelectElement($"//connectionStrings/add[@name='{connStrName}']");
                 connStr?.Remove();
 
@@ -377,7 +410,7 @@ namespace DbChecker
 
         private void saveQueryButton_Click(object sender, EventArgs e)
         {
-            SaveHistory();
+            SaveHistory(true);
         }
 
         private void deleteQueryButton_Click(object sender, EventArgs e)
@@ -422,14 +455,34 @@ namespace DbChecker
             GoLast();
         }
 
-        private void toolStripPanel1_Click(object sender, EventArgs e)
+        private void firstHistoryButton_Click(object sender, EventArgs e)
         {
-
+            GoFirst();
         }
 
-        private void progressBar1_Click(object sender, EventArgs e)
+        private void csvButton_Click(object sender, EventArgs e)
         {
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                var dt = CsvFileReader.Load(openFileDialog1.FileName);
+                queryTextbox.Text = SqlGenerator.GenerateSelectIntoTemp(dt);
+            }
+        }
 
+        private void queryTextbox_TextChangedDelayed(object sender, FastColoredTextBoxNS.TextChangedEventArgs e)
+        {
+            var formatter = new FastColoredTextBox { Text = historyList[historyPosition] };
+
+            if (queryTextbox.Text != formatter.Text)
+            {
+                Text = Text.Trim('*') + "*";
+                changed = true;
+            }
+            else
+            {
+                Text = Text.Trim('*');
+                changed = false;
+            }
         }
     }
 }
