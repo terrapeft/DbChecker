@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -27,6 +28,7 @@ namespace DbChecker
         private DataTable gridTable;
         private CancellationTokenSource cts;
         private bool changed = false;
+        private bool autoSave = false;
 
         public Form1()
         {
@@ -37,8 +39,27 @@ namespace DbChecker
                 resultsTextbox.AppendText("DataGridView Error: " + args.Exception.Message + "\r\n");
             };
 
-            AddUsers();
+            AddConnectionStrings();
+            LoadParametersFromConfig();
             LoadHistory();
+
+            connStrTextBox.SelectionLength = 0;
+            queryTextbox.Focus();
+        }
+
+        private void LoadParametersFromConfig()
+        {
+            autoSave = Convert.ToBoolean(ConfigurationManager.AppSettings.Get("autoSave"));
+            autoSaveToolStripMenuItem.Checked = autoSave;
+            autoSaveToolStripMenuItem.BackColor = autoSave ? Color.BurlyWood : Color.Transparent;
+
+            queryTextbox.WordWrap = Convert.ToBoolean(ConfigurationManager.AppSettings.Get("wrap"));
+            wrapToolStripMenuItem.Checked = queryTextbox.WordWrap;
+            wrapToolStripMenuItem.BackColor = queryTextbox.WordWrap ? Color.BurlyWood : Color.Transparent;
+
+            connStrComboBox.SelectedIndex = Convert.ToInt32(ConfigurationManager.AppSettings.Get("lastConnStrPosition"));
+
+            historyPosition = Convert.ToInt32(ConfigurationManager.AppSettings.Get("lastQueryPosition"));
         }
 
         private void LoadHistory()
@@ -57,7 +78,11 @@ namespace DbChecker
 
             if (historyList.Any())
             {
-                historyPosition = historyList.Count - 1;
+                if (historyPosition == 0)
+                {
+                    historyPosition = historyList.Count - 1;
+                }
+
                 queryTextbox.Text = historyList[historyPosition];
             }
 
@@ -72,7 +97,7 @@ namespace DbChecker
                 File.WriteAllText(historyFile, JsonConvert.SerializeObject(historyList));
                 RefreshPosition();
             }
-            else if (!historyList.Any(i => i.Trim().ToLower().Equals(queryTextbox.Text.Trim().ToLower())))
+            else if (autoSave && !historyList.Any(i => i.Trim().ToLower().Equals(queryTextbox.Text.Trim().ToLower())))
             {
                 historyList.Add(queryTextbox.Text);
                 historyPosition = historyList.Count - 1;
@@ -109,6 +134,8 @@ namespace DbChecker
 
         private void GoLeft()
         {
+            SaveHistory(true);
+
             if (historyPosition == 0)
             {
                 historyPosition = historyList.Count - 1;
@@ -123,6 +150,8 @@ namespace DbChecker
 
         private void GoRight()
         {
+            SaveHistory(true);
+
             if (historyPosition == historyList.Count - 1)
             {
                 historyPosition = 0;
@@ -137,26 +166,28 @@ namespace DbChecker
 
         private void GoFirst()
         {
+            SaveHistory(true);
+
             historyPosition = 0;
             RefreshPosition();
         }
 
         private void GoLast()
         {
+            SaveHistory(true);
+
             historyPosition = historyList.Count - 1;
             RefreshPosition();
         }
 
-        private void AddUsers()
+        private void AddConnectionStrings()
         {
             connStrComboBox.Items.Clear();
             ConfigurationManager.RefreshSection("connectionStrings");
 
             connStrComboBox.Items.AddRange(ConfigurationManager.ConnectionStrings.Cast<ConnectionStringSettings>().ToArray());
-            connStrComboBox.DisplayMember = "Name";
+            connStrComboBox.ComboBox.DisplayMember = "Name";
             connStrComboBox.Focus();
-
-            connStrComboBox.SelectedIndex = Convert.ToInt32(ConfigurationManager.AppSettings.Get("lastConnStrPosition"));
         }
 
         private void Comment()
@@ -232,6 +263,7 @@ namespace DbChecker
                                     gridTable.Load(reader);
                                     count = gridTable.Rows.Count;
                                     saveResultsToolStripMenuItem.Enabled = true;
+                                    gridResultCountLabel.Text = $"Results: {count}";
                                 }
                                 else
                                 {
@@ -261,6 +293,7 @@ namespace DbChecker
                                     }
                                 }
                             } while (!reader.IsClosed && reader.NextResult());
+
                         }
                     }
                 });
@@ -279,11 +312,15 @@ namespace DbChecker
                 resultsTextbox.AppendText(sb.ToString());
                 resultsTextbox.AppendText(Environment.NewLine);
                 resultsTextbox.AppendText("\r\nCancelled.\r\n");
+
+                tabControl1.SelectedTab = tabPage1;
             }
             catch (Exception ex)
             {
                 resultsTextbox.AppendText(ex.Message);
                 resultsTextbox.AppendText(Environment.NewLine);
+
+                tabControl1.SelectedTab = tabPage1;
             }
 
             if (gridTable.Rows.Count == 0)
@@ -299,12 +336,6 @@ namespace DbChecker
         private void connStrComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             connStrTextBox.Text = ((ConnectionStringSettings)connStrComboBox.SelectedItem).ConnectionString;
-
-            var connStrIndex = connStrComboBox.SelectedIndex;
-            var doc = XDocument.Load(ConfigurationManager.AppSettings.Get("config"));
-            var lastConnStrPosition = doc.XPathSelectElement("//appSettings/add[@key='lastConnStrPosition']");
-            lastConnStrPosition?.SetAttributeValue("value", connStrIndex);
-            doc.Save(ConfigurationManager.AppSettings.Get("config"));
         }
 
         private void queryTextbox_KeyUp(object sender, KeyEventArgs e)
@@ -375,7 +406,7 @@ namespace DbChecker
                 }
 
                 doc.Save("connections.config");
-                AddUsers();
+                AddConnectionStrings();
                 connStrComboBox.SelectedIndex = connStrComboBox.FindStringExact(connStrName);
             }
         }
@@ -402,7 +433,7 @@ namespace DbChecker
                 connStr?.Remove();
 
                 doc.Save(ConfigurationManager.AppSettings.Get("config"));
-                AddUsers();
+                AddConnectionStrings();
             }
         }
 
@@ -483,6 +514,48 @@ namespace DbChecker
                 Text = Text.Trim('*');
                 changed = false;
             }
+        }
+
+        private void wrapToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            queryTextbox.WordWrap = !queryTextbox.WordWrap;
+            wrapToolStripMenuItem.Checked = queryTextbox.WordWrap;
+            wrapToolStripMenuItem.BackColor = queryTextbox.WordWrap ? Color.BurlyWood : Color.Transparent;
+        }
+
+        private void autoSaveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            autoSave = !autoSave;
+            autoSaveToolStripMenuItem.Checked = autoSave;
+            autoSaveToolStripMenuItem.BackColor = autoSave ? Color.BurlyWood : Color.Transparent;
+        }
+
+        private void addQueryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveHistory(true);
+            queryTextbox.Text = string.Empty;
+            SaveHistory();
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            var doc = XDocument.Load(ConfigurationManager.AppSettings.Get("config"));
+
+            var lastConnStrPosition = doc.XPathSelectElement("//appSettings/add[@key='lastConnStrPosition']");
+            lastConnStrPosition?.SetAttributeValue("value", connStrComboBox.SelectedIndex);
+
+            var lastQueryPosition = doc.XPathSelectElement("//appSettings/add[@key='lastQueryPosition']");
+            lastQueryPosition?.SetAttributeValue("value", historyPosition);
+
+            var autoSaveParam = doc.XPathSelectElement("//appSettings/add[@key='autoSave']");
+            autoSaveParam?.SetAttributeValue("value", autoSave);
+
+            var wrapParam = doc.XPathSelectElement("//appSettings/add[@key='wrap']");
+            wrapParam?.SetAttributeValue("value", wrapToolStripMenuItem.Checked);
+
+            doc.Save(ConfigurationManager.AppSettings.Get("config"));
+
+            SaveHistory(true);
         }
     }
 }
