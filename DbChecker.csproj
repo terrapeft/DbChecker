@@ -112,7 +112,9 @@
     <None Include="Resources\Icon1.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="db.ico" />
+    <None Include="db.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="connections.config">

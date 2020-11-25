@@ -78,7 +78,7 @@ namespace DbChecker
 
             if (historyList.Any())
             {
-                if (historyPosition == 0)
+                if (historyPosition == 0 || historyPosition >= historyList.Count)
                 {
                     historyPosition = historyList.Count - 1;
                 }
@@ -419,6 +419,8 @@ namespace DbChecker
             historyList.Clear();
 
             resultsTextbox.AppendText($"Backup saved to: {historyFileName}{backup}{Environment.NewLine}");
+
+            historyPosition = 0;
 
             LoadHistory();
         }
