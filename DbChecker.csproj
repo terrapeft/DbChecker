@@ -71,6 +71,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="v2\AppForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="v2\AppForm.Designer.cs">
+      <DependentUpon>AppForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="CsvFileReader.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
@@ -80,7 +86,28 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StorageTemplate.cs" />
     <Compile Include="SqlGenerator.cs" />
+    <Compile Include="v2\ExtendedTabControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="v2\Models\GroupResults.cs" />
+    <Compile Include="v2\Models\GroupResultsCollection.cs" />
+    <Compile Include="v2\Repositories\ConfigRepository.cs" />
+    <Compile Include="v2\Global.cs" />
+    <Compile Include="v2\Models\Group.cs" />
+    <Compile Include="v2\Repositories\SqlRepository.cs" />
+    <Compile Include="v2\Models\Script.cs" />
+    <Compile Include="v2\Repositories\FileRepository.cs" />
+    <Compile Include="v2\Models\ScriptResult.cs" />
+    <Compile Include="v2\Views\CloseButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="v2\Views\GroupsView.cs" />
+    <Compile Include="v2\Views\UIBox.cs" />
+    <EmbeddedResource Include="v2\AppForm.resx">
+      <DependentUpon>AppForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
@@ -122,6 +149,7 @@
     </Content>
     <None Include="Resources\progress.gif" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>rmdir "c:\work\DbChecker" /S /Q
