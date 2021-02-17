@@ -17,7 +17,7 @@ namespace DbChecker.Models
 
         public Script Script { get; set; }
         public Guid Guid { get; }
-        public DataTable Results { get; set; }
+        public DataSet Results { get; set; }
         public string Messages { get; set; }
     }
 
@@ -25,7 +25,7 @@ namespace DbChecker.Models
     {
         Script Script { get; set; }
         Guid Guid { get; }
-        DataTable Results { get; set; }
+        DataSet Results { get; set; }
         string Messages { get; set; }
     }
 }

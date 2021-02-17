@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using DbChecker.Controls;
 using DbChecker.Models;
 using DbChecker.Repositories;
 using DbChecker.Views;
@@ -17,10 +19,9 @@ namespace DbChecker
     {
         private ISqlRepository _sqlRepository;
         private IConfigRepository _configRepository;
-        private GroupsView _groupsView;
         private GroupResultsCollection _groupResults;
         private List<Group> _groups;
-        private UIBox _uiBox;
+        private QueryBox _uiBox;
 
         public AppForm()
         {
@@ -29,16 +30,14 @@ namespace DbChecker
             _configRepository = new ConfigRepository();
             _sqlRepository = new SqlRepository();
 
+            AddConnectionStrings();
+
             _groups = _sqlRepository.GetSql();
-            _groupResults = new GroupResultsCollection(_groups);
+            //_groupResults = new GroupResultsCollection(_groups);
 
-            _groupsView = new GroupsView();
-            groundSplitContainer.Panel2.Controls.Clear();
-            groundSplitContainer.Panel2.Controls.Add(_groupsView.CurrentView);
-
-            _groupsView.SelectedGroupChanged += (sender, s) =>
+            groupsControl.SelectedGroupChanged += (sender, g) =>
             {
-                _uiBox = new UIBox(_groupResults.Results.FirstOrDefault(g => g.GroupName.Equals(s)));
+                _uiBox = new QueryBox(g);
                 var btn = new CloseButton().SetPosition(queryAndResultsSplitContainer.Panel1);
 
                 queryAndResultsSplitContainer.Panel1.Controls.Clear();
@@ -48,8 +47,18 @@ namespace DbChecker
                 btn.BringToFront();
             };
 
-            _groupsView.Bind(_groups);
+            groupsControl.Bind(_groups);
 
+        }
+
+        private void AddConnectionStrings()
+        {
+            connStrComboBox.Items.Clear();
+            ConfigurationManager.RefreshSection("connectionStrings");
+
+            connStrComboBox.Items.AddRange(_configRepository.ConnectionStrings);
+            connStrComboBox.DisplayMember = "Name";
+            connStrComboBox.Focus();
         }
 
         private void SaveButton_Click(object sender, EventArgs e)
@@ -58,6 +67,43 @@ namespace DbChecker
             {
                 _sqlRepository.PatchAndSave(_uiBox.GetModel());
             }
+        }
+
+        private void connStrComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            connStrTextBox.Text = ((ConnectionStringSettings)connStrComboBox.SelectedItem).ConnectionString;
+        }
+
+        private async void runButton_Click(object sender, EventArgs e)
+        {
+            var runner = new SqlRunner(_uiBox.Script);
+            await runner.GetDataSet(connStrTextBox.Text).ContinueWith(r =>
+            {
+                if (r.Result?.Results?.Tables.Count > 0)
+                {
+                    resultsBox.BeginInvoke(new Action<DataSet>(SetTables), r.Result?.Results);
+                }
+                else
+                {
+                    resultsBox.BeginInvoke(new Action<string>(SetText), r.Result?.Messages);
+                }
+            });
+        }
+
+        private void SetTables(DataSet dataSet)
+        {
+            resultsBox.Tables = dataSet;
+        }
+
+        private void SetText(string text)
+        {
+            resultsBox.Messages = text;
+        }
+
+        private void recycleButton_Click(object sender, EventArgs e)
+        {
+            _groups = _sqlRepository.GetSql();
+            _groupResults = new GroupResultsCollection(_groups);
         }
     }
 }

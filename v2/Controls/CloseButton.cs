@@ -1,8 +1,7 @@
-﻿using System.ComponentModel;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Windows.Forms;
 
-namespace DbChecker.Views
+namespace DbChecker.Controls
 {
     public class CloseButton : Button
     {

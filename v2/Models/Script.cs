@@ -10,7 +10,6 @@ namespace DbChecker.Models
     {
         string Text { get; set; }
         string Name { get; set; }
-        string ConnectionString { get; set; }
         Guid Guid { get; set; }
     }
 
@@ -23,7 +22,6 @@ namespace DbChecker.Models
 
         public string Text { get; set; }
         public string Name { get; set; }
-        public string ConnectionString { get; set; }
         public Guid Guid { get; set; }
     }
 }

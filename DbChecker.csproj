@@ -88,6 +88,18 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StorageTemplate.cs" />
     <Compile Include="SqlGenerator.cs" />
+    <Compile Include="v2\Controls\GroupsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="v2\Controls\GroupsControl.Designer.cs">
+      <DependentUpon>GroupsControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="v2\Controls\ResultsBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="v2\Controls\ResultsBox.Designer.cs">
+      <DependentUpon>ResultsBox.cs</DependentUpon>
+    </Compile>
     <Compile Include="v2\ExtendedTabControl.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -100,11 +112,11 @@
     <Compile Include="v2\Models\Script.cs" />
     <Compile Include="v2\Repositories\FileRepository.cs" />
     <Compile Include="v2\Models\ScriptResult.cs" />
-    <Compile Include="v2\Views\CloseButton.cs">
+    <Compile Include="v2\Controls\CloseButton.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="v2\Views\GroupsView.cs" />
-    <Compile Include="v2\Views\UIBox.cs" />
+    <Compile Include="v2\SqlRunner.cs" />
+    <Compile Include="v2\Views\QueryBox.cs" />
     <EmbeddedResource Include="v2\AppForm.resx">
       <DependentUpon>AppForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -121,6 +133,12 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="v2\Controls\GroupsControl.resx">
+      <DependentUpon>GroupsControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="v2\Controls\ResultsBox.resx">
+      <DependentUpon>ResultsBox.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

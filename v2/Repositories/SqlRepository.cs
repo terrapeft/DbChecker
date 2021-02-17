@@ -47,13 +47,13 @@ namespace DbChecker.Repositories
             _fileRepository.WriteFile(_configRepository.SqlFilePath, JsonConvert.SerializeObject(scripts));
         }
 
-        public void PatchAndSave(GroupResults groupResults)
+        public void PatchAndSave(Group group)
         {
             var currentFile = GetSql();
-            var node = currentFile.FirstOrDefault(n => n.Guid == groupResults.Guid);
+            var node = currentFile.FirstOrDefault(n => n.Guid == group.Guid);
             if (node != null)
             {
-                currentFile[currentFile.IndexOf(node)] = groupResults.ToGroup();
+                currentFile[currentFile.IndexOf(node)] = group;
             }
 
             SaveSql(currentFile);
@@ -65,7 +65,7 @@ namespace DbChecker.Repositories
     {
         List<Group> GetSql();
         void SaveSql(List<Group> scripts);
-        void PatchAndSave(GroupResults groupResults);
+        void PatchAndSave(Group @group);
     }
 
 }

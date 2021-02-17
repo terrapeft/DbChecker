@@ -1,26 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
+﻿using System.Linq;
 using System.Windows.Forms;
 using DbChecker.Models;
 using FastColoredTextBoxNS;
 
 //using Form = DbChecker.Global;
 
-namespace DbChecker
+namespace DbChecker.Views
 {
-    public class UIBox
+    public class QueryBox
     {
         private static int _tabPageCount;
         private static int _queryCount;
 
-        private GroupResults _groupResults;
+        private Group _group;
         private TabControl _groupTabControl;
 
-        public UIBox(GroupResults groupResults)
+        private TabPage Page => _groupTabControl.SelectedTab;
+
+        public Script Script => _groupTabControl.SelectedTab.Tag as Script;
+
+        public QueryBox(Group groupResults)
         {
-            _groupResults = groupResults;
+            _group = groupResults;
         }
 
         public TabControl CreateBox()
@@ -29,9 +30,9 @@ namespace DbChecker
             _groupTabControl.Dock = DockStyle.Fill;
             _groupTabControl.Name = "groupsTabControl";
 
-            foreach (var scriptResults in _groupResults.ScriptResults)
+            foreach (var script in _group.Scripts)
             {
-                _groupTabControl.Controls.Add(CreateTabPage(_groupTabControl, scriptResults.Script.Name, scriptResults.Script.Text));
+                _groupTabControl.Controls.Add(CreateTabPage(_groupTabControl, script));
             }
 
             CreatePlusTabPage(_groupTabControl);
@@ -42,31 +43,32 @@ namespace DbChecker
         /// <summary>
         /// Save results from controls into model.
         /// </summary>
-        public GroupResults GetModel()
+        public Group GetModel()
         {
             foreach (TabPage page in _groupTabControl.TabPages)
             {
-                var script = _groupResults.ScriptResults.FirstOrDefault(sr => sr.Script.Name.Equals(page.Text))?.Script;
-                if (script != null)
+                if (page.Tag is Script script)
                 {
                     var textBox = page.Controls.Find(script.Name, false).FirstOrDefault() as FastColoredTextBox;
                     script.Text = textBox.Text;
                 }
             }
 
-            return _groupResults;
+            return _group;
         }
 
-        private TabPage CreateTabPage(TabControl tabControl, string name, string query = "")
+        private TabPage CreateTabPage(TabControl tabControl, Script script)
         {
             var tabPage = new TabPage();
 
             tabPage.Name = "tabPage" + ++_tabPageCount;
             tabPage.TabIndex = _tabPageCount;
-            tabPage.Text = name;
+            tabPage.Text = script.Name;
+            tabPage.Tag = script;
+
             tabPage.DoubleClick += (sender, args) => { tabControl.Controls.RemoveByKey(tabPage.Name); };
 
-            tabPage.Controls.Add(CreateQueryBox(name, query));
+            tabPage.Controls.Add(CreateQueryBox(script.Name, script.Text));
 
             return tabPage;
         }
@@ -82,13 +84,14 @@ namespace DbChecker
             plusTabPage.Enter += (o, e) =>
             {
                 var name = "Script " + ++_queryCount;
-                var newTab = CreateTabPage(tabControl, name);
+                var script = new Script {Name = name};
+                _group.Scripts.Add(script);
+
+                var newTab = CreateTabPage(tabControl, script);
                 tabControl.Controls.RemoveByKey(plusTabPage.Name);
                 tabControl.Controls.Add(newTab);
                 tabControl.Controls.Add(plusTabPage);
                 tabControl.SelectTab(newTab);
-
-                _groupResults.ScriptResults.Add(new ScriptResult(new Script {Name = name}));
             };
 
             //tabControl.Controls.RemoveByKey(tabPage.Name);
@@ -121,6 +124,8 @@ namespace DbChecker
         #region Common handlers
         private void qBox_TextChangedDelayed(object sender, TextChangedEventArgs e)
         {
+            if (sender is FastColoredTextBox qBox) Script.Text = qBox.Text;
+
             //if (sender is FastColoredTextBox qBox)
             //{
             //    var formatter = new FastColoredTextBox {Text = historyList[historyPosition]};
