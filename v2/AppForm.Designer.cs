@@ -35,10 +35,11 @@ namespace DbChecker
             this.queryAndResultsSplitContainer = new System.Windows.Forms.SplitContainer();
             this.groupsTabControl = new System.Windows.Forms.TabControl();
             this.addNewTabPage = new System.Windows.Forms.TabPage();
+            this.resultsBox = new DbChecker.Controls.ResultsBox();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.itemEditor = new DbChecker.Controls.ItemEditor();
             this.groupsControl = new DbChecker.Controls.GroupsControl();
             this.connStrComboBox = new System.Windows.Forms.ComboBox();
+            this.itemEditor = new DbChecker.Controls.ItemEditor();
             this.runButton = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -60,6 +61,7 @@ namespace DbChecker
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             ((System.ComponentModel.ISupportInitialize)(this.queryAndResultsSplitContainer)).BeginInit();
             this.queryAndResultsSplitContainer.Panel1.SuspendLayout();
+            this.queryAndResultsSplitContainer.Panel2.SuspendLayout();
             this.queryAndResultsSplitContainer.SuspendLayout();
             this.groupsTabControl.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -77,6 +79,10 @@ namespace DbChecker
             // queryAndResultsSplitContainer.Panel1
             // 
             this.queryAndResultsSplitContainer.Panel1.Controls.Add(this.groupsTabControl);
+            // 
+            // queryAndResultsSplitContainer.Panel2
+            // 
+            this.queryAndResultsSplitContainer.Panel2.Controls.Add(this.resultsBox);
             this.queryAndResultsSplitContainer.Size = new System.Drawing.Size(880, 489);
             this.queryAndResultsSplitContainer.SplitterDistance = 247;
             this.queryAndResultsSplitContainer.TabIndex = 0;
@@ -103,6 +109,15 @@ namespace DbChecker
             this.addNewTabPage.Text = "+";
             this.addNewTabPage.UseVisualStyleBackColor = true;
             // 
+            // resultsBox
+            // 
+            this.resultsBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.resultsBox.Location = new System.Drawing.Point(0, 0);
+            this.resultsBox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.resultsBox.Name = "resultsBox";
+            this.resultsBox.Size = new System.Drawing.Size(880, 238);
+            this.resultsBox.TabIndex = 0;
+            // 
             // panel1
             // 
             this.panel1.Controls.Add(this.groupsControl);
@@ -115,24 +130,12 @@ namespace DbChecker
             this.panel1.Size = new System.Drawing.Size(880, 56);
             this.panel1.TabIndex = 2;
             // 
-            // itemEditor
-            // 
-            editableItem1.ItemType = DbChecker.ItemType.ConnectionString;
-            editableItem1.Name = null;
-            editableItem1.Value = "";
-            this.itemEditor.Item = editableItem1;
-            this.itemEditor.Location = new System.Drawing.Point(2, 25);
-            this.itemEditor.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.itemEditor.Name = "itemEditor";
-            this.itemEditor.Size = new System.Drawing.Size(411, 29);
-            this.itemEditor.TabIndex = 3;
-            // 
             // groupsControl
             // 
             this.groupsControl.Location = new System.Drawing.Point(417, 6);
             this.groupsControl.Margin = new System.Windows.Forms.Padding(2);
             this.groupsControl.Name = "groupsControl";
-            this.groupsControl.Size = new System.Drawing.Size(459, 20);
+            this.groupsControl.Size = new System.Drawing.Size(459, 21);
             this.groupsControl.TabIndex = 2;
             // 
             // connStrComboBox
@@ -145,14 +148,26 @@ namespace DbChecker
             this.connStrComboBox.TabIndex = 1;
             this.connStrComboBox.SelectedIndexChanged += new System.EventHandler(this.connStrComboBox_SelectedIndexChanged);
             // 
+            // itemEditor
+            // 
+            editableItem1.ItemType = DbChecker.ItemType.ConnectionString;
+            editableItem1.Name = null;
+            editableItem1.Value = "";
+            this.itemEditor.Item = editableItem1;
+            this.itemEditor.Location = new System.Drawing.Point(0, 26);
+            this.itemEditor.Margin = new System.Windows.Forms.Padding(2);
+            this.itemEditor.Name = "itemEditor";
+            this.itemEditor.Size = new System.Drawing.Size(837, 29);
+            this.itemEditor.TabIndex = 3;
+            // 
             // runButton
             // 
             this.runButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.runButton.Image = global::DbChecker.Properties.Resources.iconfinder_database_run_103471;
-            this.runButton.Location = new System.Drawing.Point(845, 28);
+            this.runButton.Location = new System.Drawing.Point(849, 28);
             this.runButton.Margin = new System.Windows.Forms.Padding(4);
             this.runButton.Name = "runButton";
-            this.runButton.Size = new System.Drawing.Size(31, 28);
+            this.runButton.Size = new System.Drawing.Size(28, 28);
             this.runButton.TabIndex = 7;
             this.runButton.UseVisualStyleBackColor = true;
             this.runButton.Click += new System.EventHandler(this.runButton_Click);
@@ -300,6 +315,7 @@ namespace DbChecker
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.AppForm_FormClosing);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.AppForm_KeyUp);
             this.queryAndResultsSplitContainer.Panel1.ResumeLayout(false);
+            this.queryAndResultsSplitContainer.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.queryAndResultsSplitContainer)).EndInit();
             this.queryAndResultsSplitContainer.ResumeLayout(false);
             this.groupsTabControl.ResumeLayout(false);
@@ -319,7 +335,6 @@ namespace DbChecker
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.ComboBox connStrComboBox;
         private System.Windows.Forms.Button runButton;
-        private ResultsBox resultsBox;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem wordWrapToolStripMenuItem;
@@ -340,5 +355,6 @@ namespace DbChecker
         private System.Windows.Forms.ToolStripMenuItem saveGroupToolStripMenuItem;
         private GroupsControl groupsControl;
         private ItemEditor itemEditor;
+        private ResultsBox resultsBox;
     }
 }
