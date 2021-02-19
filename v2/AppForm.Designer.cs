@@ -150,8 +150,8 @@ namespace DbChecker
             // 
             // itemEditor
             // 
+            editableItem1.Id = null;
             editableItem1.ItemType = DbChecker.ItemType.ConnectionString;
-            editableItem1.Name = null;
             editableItem1.Value = "";
             this.itemEditor.Item = editableItem1;
             this.itemEditor.Location = new System.Drawing.Point(0, 26);
@@ -159,6 +159,8 @@ namespace DbChecker
             this.itemEditor.Name = "itemEditor";
             this.itemEditor.Size = new System.Drawing.Size(837, 29);
             this.itemEditor.TabIndex = 3;
+            this.itemEditor.DeletingItem += new System.EventHandler<DbChecker.Models.EditableItem>(this.itemEditor_OnDelete);
+            this.itemEditor.SavingItem += new System.EventHandler<DbChecker.Models.EditableItem>(this.itemEditor_OnSave);
             // 
             // runButton
             // 

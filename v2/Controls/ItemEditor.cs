@@ -8,8 +8,8 @@ namespace DbChecker.Controls
     {
         private EditableItem _item = new EditableItem();
 
-        public event EventHandler<EditableItem> OnDelete;
-        public event EventHandler<EditableItem> OnSave;
+        public event EventHandler<EditableItem> DeletingItem;
+        public event EventHandler<EditableItem> SavingItem;
 
         public ItemEditor()
         {
@@ -32,12 +32,12 @@ namespace DbChecker.Controls
 
         private void saveButton_Click(object sender, EventArgs e)
         {
-            OnSave?.Invoke(this, Item);
+            SavingItem?.Invoke(this, Item);
         }
 
         private void deleteButton_Click(object sender, EventArgs e)
         {
-            OnDelete?.Invoke(this, Item);
+            DeletingItem?.Invoke(this, Item);
         }
     }
 }

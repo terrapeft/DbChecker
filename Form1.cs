@@ -434,7 +434,7 @@ namespace DbChecker
                 var connStr = doc.XPathSelectElement($"//connectionStrings/add[@name='{connStrName}']");
                 connStr?.Remove();
 
-                doc.Save(ConfigurationManager.AppSettings.Get("config"));
+                doc.Save("connections.config");
                 AddConnectionStrings();
             }
         }

@@ -1,6 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Windows.Forms;
 using DbChecker.Models;
+using DbChecker.Repositories;
 using FastColoredTextBoxNS;
 
 //using Form = DbChecker.Global;
@@ -13,15 +15,21 @@ namespace DbChecker.Views
         private static int _queryCount;
 
         private Group _group;
+        private ConfigRepository _configRepository;
         private TabControl _groupTabControl;
 
-        private TabPage Page => _groupTabControl.SelectedTab;
+        public TabPage Page => _groupTabControl.SelectedTab;
 
         public Script Script => _groupTabControl.SelectedTab.Tag as Script;
+
+        public event EventHandler<Script> RenamingScript;
+        public event EventHandler<Script> DeletingScript;
+
 
         public QueryBox(Group groupResults)
         {
             _group = groupResults;
+            _configRepository = new ConfigRepository();
         }
 
         public TabControl CreateBox()
@@ -29,6 +37,7 @@ namespace DbChecker.Views
             _groupTabControl = new TabControl();
             _groupTabControl.Dock = DockStyle.Fill;
             _groupTabControl.Name = "groupsTabControl";
+            _groupTabControl.MouseDoubleClick += GroupTabControlOnMouseDoubleClick;
 
             foreach (var script in _group.Scripts)
             {
@@ -37,7 +46,27 @@ namespace DbChecker.Views
 
             CreatePlusTabPage(_groupTabControl);
 
+            _groupTabControl.SelectedTab = _groupTabControl.TabPages
+                .Cast<TabPage>()
+                .FirstOrDefault(p => p.Text == _configRepository.SelectedScript);
+
             return _groupTabControl;
+        }
+
+        private void GroupTabControlOnMouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            var tc = sender as TabControl;
+            if (tc != null)
+            {
+                for (var i = 0; i < tc.TabCount; ++i)
+                {
+                    if (tc.GetTabRect(i).Contains(e.Location))
+                    {
+                        var tp = tc.TabPages[i];
+                        RenamingScript?.Invoke(this, tp.Tag as Script);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -49,7 +78,7 @@ namespace DbChecker.Views
             {
                 if (page.Tag is Script script)
                 {
-                    var textBox = page.Controls.Find(script.Name, false).FirstOrDefault() as FastColoredTextBox;
+                    var textBox = page.Controls[0] as FastColoredTextBox;
                     script.Text = textBox.Text;
                 }
             }
@@ -60,11 +89,20 @@ namespace DbChecker.Views
         private TabPage CreateTabPage(TabControl tabControl, Script script)
         {
             var tabPage = new TabPage();
+            var menuItem = new MenuItem("Delete Tab");
+
+            menuItem.Click += (sender, args) =>
+            {
+                //_group.Scripts.Remove(tabPage.Tag as Script);
+                //tabControl.Controls.Remove(tabPage);
+                DeletingScript?.Invoke(this, script);
+            };
 
             tabPage.Name = "tabPage" + ++_tabPageCount;
             tabPage.TabIndex = _tabPageCount;
             tabPage.Text = script.Name;
             tabPage.Tag = script;
+            tabPage.ContextMenu = new ContextMenu(new[] { menuItem } );
 
             tabPage.DoubleClick += (sender, args) => { tabControl.Controls.RemoveByKey(tabPage.Name); };
 

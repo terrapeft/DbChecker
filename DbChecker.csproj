@@ -106,20 +106,18 @@
     <Compile Include="v2\Controls\ResultsBox.Designer.cs">
       <DependentUpon>ResultsBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="v2\ExtendedTabControl.cs">
+    <Compile Include="v2\Controls\ExtendedTabControl.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="v2\ItemType.cs" />
     <Compile Include="v2\Models\EditableItem.cs" />
-    <Compile Include="v2\Models\GroupResults.cs" />
-    <Compile Include="v2\Models\GroupResultsCollection.cs" />
+    <Compile Include="v2\Models\ScriptResult.cs" />
     <Compile Include="v2\Repositories\ConfigRepository.cs" />
     <Compile Include="v2\Global.cs" />
     <Compile Include="v2\Models\Group.cs" />
     <Compile Include="v2\Repositories\SqlRepository.cs" />
     <Compile Include="v2\Models\Script.cs" />
     <Compile Include="v2\Repositories\FileRepository.cs" />
-    <Compile Include="v2\Models\ScriptResult.cs" />
     <Compile Include="v2\Controls\CloseButton.cs">
       <SubType>Component</SubType>
     </Compile>

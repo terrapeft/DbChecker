@@ -13,9 +13,8 @@ using DbChecker.Models;
 using DbChecker.Repositories;
 using DbChecker.Views;
 
-/// <summary>
-/// Icon set: https://www.iconfinder.com/iconsets/basic-user-interface-elements
-/// </summary>
+// Icon set: https://www.iconfinder.com/iconsets/basic-user-interface-elements
+
 namespace DbChecker
 {
     public partial class AppForm : Form
@@ -34,6 +33,8 @@ namespace DbChecker
             }
         }
 
+        public string SelectedConnectionStringName => (connStrComboBox.SelectedItem as ConnectionStringSettings)?.Name ?? connStrComboBox.Text;
+
         public AppForm()
         {
             InitializeComponent();
@@ -41,29 +42,65 @@ namespace DbChecker
             _configRepository = new ConfigRepository();
             _sqlRepository = new SqlRepository();
 
+            groupsControl.SelectedGroupChanged += GroupsControl_SelectedGroupChanged;
+            groupsControl.RenamingGroup += GroupsControl_RenamingGroup;
+
+            SetState();
+        }
+
+        private void SetState()
+        {
             AddConnectionStrings();
             _groups = _sqlRepository.GetSql();
-
-            groupsControl.SelectedGroupChanged += (sender, g) =>
-            {
-                _uiBox = new QueryBox(g);
-                queryAndResultsSplitContainer.Panel1.Controls.Clear();
-                queryAndResultsSplitContainer.Panel1.Controls.Add(_uiBox.CreateBox());
-            };
-
             groupsControl.Bind(_groups);
-
+            groupsControl.SelectItem(_configRepository.SelectedGroup);
             connStrComboBox.SelectedIndex = connStrComboBox.FindStringExact(_configRepository.SelectedConnectionString);
+        }
+
+        private void GroupsControl_RenamingGroup(object sender, Group e)
+        {
+            itemEditor.Item = new EditableItem {Id = e.Guid.ToString(), Value = e.Name, ItemType = ItemType.Group};
+        }
+
+        private void UiBox_RenamingScript(object sender, Script e)
+        {
+            itemEditor.Item = new EditableItem { Id = e.Guid.ToString(), Value = e.Name, ItemType = ItemType.Script };
+        }
+
+        private void GroupsControl_SelectedGroupChanged(object sender, Group g)
+        {
+            _uiBox = new QueryBox(g);
+            _uiBox.RenamingScript += UiBox_RenamingScript;
+            _uiBox.DeletingScript += UiBox_DeletingScript;
+            queryAndResultsSplitContainer.Panel1.Controls.Clear();
+            queryAndResultsSplitContainer.Panel1.Controls.Add(_uiBox.CreateBox());
+        }
+
+        private void UiBox_DeletingScript(object sender, Script e)
+        {
+            var group = _groups.FirstOrDefault(g => g.Scripts.Contains(g.Scripts.FirstOrDefault(s => s.Guid == e.Guid)));
+            var script = _groups
+                .SelectMany(g => g.Scripts)
+                .FirstOrDefault(s => s.Guid == e.Guid);
+
+            group.Scripts.Remove(script);
+            SaveButton_Click(null, null);
+            SetState();
         }
 
         private void AddConnectionStrings()
         {
             connStrComboBox.Items.Clear();
-            ConfigurationManager.RefreshSection("connectionStrings");
+            connStrComboBox.Text = string.Empty;
 
             connStrComboBox.Items.AddRange(_configRepository.ConnectionStrings);
             connStrComboBox.DisplayMember = "Name";
             connStrComboBox.Focus();
+
+            if (connStrComboBox.Items.Count > 0)
+            {
+                connStrComboBox.SelectedIndex = 0;
+            }
         }
 
         private void SaveButton_Click(object sender, EventArgs e)
@@ -79,8 +116,8 @@ namespace DbChecker
             var ei = new EditableItem
             {
                 ItemType = ItemType.ConnectionString,
-                Name = (connStrComboBox.SelectedItem as ConnectionStringSettings)?.Name ?? connStrComboBox.Text,
-                Value = ((ConnectionStringSettings)connStrComboBox.SelectedItem).ConnectionString
+                Id = SelectedConnectionStringName,
+                Value = SelectedConnectionString
             };
 
             itemEditor.Item = ei;
@@ -137,25 +174,62 @@ namespace DbChecker
 
         private void itemEditor_OnSave(object sender, EditableItem e)
         {
+            switch (e.ItemType)
+            {
+                case ItemType.ConnectionString:
+                {
+                    var newName = SelectedConnectionStringName;
+                    _configRepository.SaveConnectionString(newName, e.Value);
+                    AddConnectionStrings();
+                    connStrComboBox.SelectedIndex = connStrComboBox.FindStringExact(newName);
+                    break;
+                }
+                case ItemType.Group:
+                    var edg = sender as ItemEditor;
+                    var group = _groups.Find(g => g.Guid == Guid.Parse(e.Id));
+                    group.Name = edg.Item.Value;
+                    _configRepository.SelectedGroup = group.Name;
+                    SaveButton_Click(null, null);
+
+                    SetState();
+                    break;
+                case ItemType.Script:
+                    var eds = sender as ItemEditor;
+                    var script = _groups
+                        .SelectMany(g => g.Scripts)
+                        .FirstOrDefault(s => s.Guid == Guid.Parse(e.Id));
+                    script.Name = eds.Item.Value;
+                    _uiBox.Page.Text = script.Name;
+                    _configRepository.SelectedScript = script.Name;
+                    SaveButton_Click(null, null);
+                    SetState();
+                    break;
+            }
+        }
+        private void itemEditor_OnDelete(object sender, EditableItem e)
+        {
             if (e.ItemType == ItemType.ConnectionString)
             {
-                _configRepository.SaveConnectionString(e.Name, e.Value);
-
+                _configRepository.DeleteConnectionString(e.Id);
                 AddConnectionStrings();
-                connStrComboBox.SelectedIndex = connStrComboBox.FindStringExact(e.Name);
             }
         }
 
         private void AppForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (!string.IsNullOrEmpty(SelectedConnectionString))
+            if (!string.IsNullOrEmpty(SelectedConnectionStringName))
             {
-                _configRepository.SelectedConnectionString = SelectedConnectionString;
+                _configRepository.SelectedConnectionString = SelectedConnectionStringName;
             }
 
             if (groupsControl.CurrentGroup != null)
             {
                 _configRepository.SelectedGroup = groupsControl.CurrentGroup.Name;
+            }
+
+            if (_uiBox.Page != null)
+            {
+                _configRepository.SelectedScript = _uiBox.Page.Text;
             }
         }
     }

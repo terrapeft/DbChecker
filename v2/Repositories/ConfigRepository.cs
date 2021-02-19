@@ -25,6 +25,7 @@ namespace DbChecker.Repositories
         public string SelectedConnectionString {
             get
             {
+                RefreshConnectionStrings();
                 return ConfigurationManager.AppSettings.Get("lastConnStrName");
             }
             set
@@ -32,6 +33,7 @@ namespace DbChecker.Repositories
                 var doc = XDocument.Load(ConfigurationManager.AppSettings.Get("config"));
                 var lastConnStrName = doc.XPathSelectElement("//appSettings/add[@key='lastConnStrName']");
                 lastConnStrName?.SetAttributeValue("value", value);
+                doc.Save(ConfigurationManager.AppSettings.Get("config"));
             }
         }
 
@@ -39,6 +41,7 @@ namespace DbChecker.Repositories
         {
             get
             {
+                RefreshAppSettings();
                 return ConfigurationManager.AppSettings.Get("lastGroupName");
             }
             set
@@ -46,6 +49,23 @@ namespace DbChecker.Repositories
                 var doc = XDocument.Load(ConfigurationManager.AppSettings.Get("config"));
                 var lastGroupName = doc.XPathSelectElement("//appSettings/add[@key='lastGroupName']");
                 lastGroupName?.SetAttributeValue("value", value);
+                doc.Save(ConfigurationManager.AppSettings.Get("config"));
+            }
+        }
+
+        public string SelectedScript
+        {
+            get
+            {
+                RefreshAppSettings();
+                return ConfigurationManager.AppSettings.Get("lastScriptName");
+            }
+            set
+            {
+                var doc = XDocument.Load(ConfigurationManager.AppSettings.Get("config"));
+                var lastScriptName = doc.XPathSelectElement("//appSettings/add[@key='lastScriptName']");
+                lastScriptName?.SetAttributeValue("value", value);
+                doc.Save(ConfigurationManager.AppSettings.Get("config"));
             }
         }
 
@@ -75,6 +95,25 @@ namespace DbChecker.Repositories
 
             doc.Save("connections.config");
         }
+
+        public void DeleteConnectionString(string name)
+        {
+            var doc = XDocument.Load("connections.config");
+            var connStr = doc.XPathSelectElement($"//connectionStrings/add[@name='{name}']");
+            connStr?.Remove();
+
+            doc.Save("connections.config");
+        }
+
+        private void RefreshConnectionStrings()
+        {
+            ConfigurationManager.RefreshSection("connectionStrings");
+        }
+
+        private void RefreshAppSettings()
+        {
+            ConfigurationManager.RefreshSection("appSettings");
+        }
     }
 
     public interface IConfigRepository
@@ -83,7 +122,9 @@ namespace DbChecker.Repositories
         string DefaultQuery { get; set; }
         string SelectedConnectionString { get; set; }
         string SelectedGroup { get; set; }
+        string SelectedScript { get; set; }
         ConnectionStringSettings[] ConnectionStrings { get; }
         void SaveConnectionString(string name, string value);
+        void DeleteConnectionString(string name);
     }
 }
