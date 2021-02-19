@@ -94,6 +94,12 @@
     <Compile Include="v2\Controls\GroupsControl.Designer.cs">
       <DependentUpon>GroupsControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="v2\Controls\ItemEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="v2\Controls\ItemEditor.Designer.cs">
+      <DependentUpon>ItemEditor.cs</DependentUpon>
+    </Compile>
     <Compile Include="v2\Controls\ResultsBox.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -103,6 +109,8 @@
     <Compile Include="v2\ExtendedTabControl.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="v2\ItemType.cs" />
+    <Compile Include="v2\Models\EditableItem.cs" />
     <Compile Include="v2\Models\GroupResults.cs" />
     <Compile Include="v2\Models\GroupResultsCollection.cs" />
     <Compile Include="v2\Repositories\ConfigRepository.cs" />
@@ -136,6 +144,9 @@
     <EmbeddedResource Include="v2\Controls\GroupsControl.resx">
       <DependentUpon>GroupsControl.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="v2\Controls\ItemEditor.resx">
+      <DependentUpon>ItemEditor.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="v2\Controls\ResultsBox.resx">
       <DependentUpon>ResultsBox.cs</DependentUpon>
     </EmbeddedResource>
@@ -165,6 +176,9 @@
     <Content Include="connections.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Resources\iconfinder_database_run_103471.png" />
+    <None Include="Resources\iconfinder_trash-delete-remove_2931168.png" />
+    <None Include="Resources\iconfinder_save-guardar-diskette_2931176.png" />
     <None Include="Resources\progress.gif" />
   </ItemGroup>
   <ItemGroup />
