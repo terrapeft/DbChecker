@@ -55,6 +55,10 @@ namespace DbChecker.Repositories
             {
                 currentFile[currentFile.IndexOf(node)] = group;
             }
+            else
+            {
+                currentFile.Add(group);
+            }
 
             SaveSql(currentFile);
         }

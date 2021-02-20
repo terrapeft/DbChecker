@@ -118,9 +118,6 @@
     <Compile Include="v2\Repositories\SqlRepository.cs" />
     <Compile Include="v2\Models\Script.cs" />
     <Compile Include="v2\Repositories\FileRepository.cs" />
-    <Compile Include="v2\Controls\CloseButton.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="v2\SqlRunner.cs" />
     <Compile Include="v2\Views\QueryBox.cs" />
     <EmbeddedResource Include="v2\AppForm.resx">

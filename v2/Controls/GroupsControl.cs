@@ -6,14 +6,16 @@ using DbChecker.Models;
 
 namespace DbChecker.Controls
 {
-    public partial class GroupsControl : UserControl
+    public partial class GroupControl : UserControl
     {
         private static DateTime prevClick;
         private Group _currentGroup;
         public event EventHandler<Group> SelectedGroupChanged;
         public event EventHandler<Group> RenamingGroup;
 
-        public GroupsControl()
+        public const string NewGroupName = "<Add new group>";
+
+        public GroupControl()
         {
             InitializeComponent();
         }
@@ -22,6 +24,8 @@ namespace DbChecker.Controls
         {
             comboBox1.Items.Clear();
             comboBox1.Text = string.Empty;
+
+            comboBox1.Items.Add(new Group { Name = NewGroupName });
 
             foreach (var group in groups)
             {

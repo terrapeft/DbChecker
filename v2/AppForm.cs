@@ -24,6 +24,9 @@ namespace DbChecker
         private List<Group> _groups;
         private QueryBox _uiBox;
 
+        private const string DefaultGroupName = "New Group";
+        private const string DefaultScriptName = "New Script";
+
         public string SelectedConnectionString
         {
             get
@@ -59,17 +62,61 @@ namespace DbChecker
 
         private void GroupsControl_RenamingGroup(object sender, Group e)
         {
-            itemEditor.Item = new EditableItem {Id = e.Guid.ToString(), Value = e.Name, ItemType = ItemType.Group};
+            if (e == null) return;
+            RenameGroup(e);
+        }
+
+        private void RenameGroup(Group group)
+        {
+            itemEditor.Item = new EditableItem
+            {
+                Id = group.Guid.ToString(),
+                Value = group.Name,
+                ItemType = ItemType.Group
+            };
         }
 
         private void UiBox_RenamingScript(object sender, Script e)
         {
-            itemEditor.Item = new EditableItem { Id = e.Guid.ToString(), Value = e.Name, ItemType = ItemType.Script };
+            if (e == null) return;
+            RenameScript(e);
+        }
+
+        private void RenameScript(Script script)
+        {
+            itemEditor.Item = new EditableItem
+            {
+                Id = script.Guid.ToString(),
+                Value = script.Name,
+                ItemType = ItemType.Script
+            };
         }
 
         private void GroupsControl_SelectedGroupChanged(object sender, Group g)
         {
-            _uiBox = new QueryBox(g);
+            SetGroup(g);
+            SaveLastUsedGroupAndScript();
+        }
+
+        private void SetGroup(Group g)
+        {
+            var gr = g;
+            if (g.Name == GroupControl.NewGroupName)
+            {
+                gr = new Group
+                {
+                    Name = DefaultGroupName
+                };
+
+                _groups.Add(gr);
+                RenameGroup(gr);
+            }
+            else
+            {
+                SetConnectionString();
+            }
+
+            _uiBox = new QueryBox(gr);
             _uiBox.RenamingScript += UiBox_RenamingScript;
             _uiBox.DeletingScript += UiBox_DeletingScript;
             queryAndResultsSplitContainer.Panel1.Controls.Clear();
@@ -84,7 +131,8 @@ namespace DbChecker
                 .FirstOrDefault(s => s.Guid == e.Guid);
 
             group.Scripts.Remove(script);
-            SaveButton_Click(null, null);
+
+            SaveModel();
             SetState();
         }
 
@@ -105,6 +153,11 @@ namespace DbChecker
 
         private void SaveButton_Click(object sender, EventArgs e)
         {
+            SaveModel();
+        }
+
+        private void SaveModel()
+        {
             if (_uiBox != null)
             {
                 _sqlRepository.PatchAndSave(_uiBox.GetModel());
@@ -112,6 +165,11 @@ namespace DbChecker
         }
 
         private void connStrComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SetConnectionString();
+        }
+
+        private void SetConnectionString()
         {
             var ei = new EditableItem
             {
@@ -151,6 +209,26 @@ namespace DbChecker
 
         private void AppForm_KeyUp(object sender, KeyEventArgs e)
         {
+            if (e.KeyCode == Keys.Escape)
+            {
+                if (itemEditor.Item.ItemType == ItemType.Group)
+                {
+                    if (groupsControl.CurrentValue != _configRepository.SelectedGroup)
+                    {
+                        groupsControl.SelectItem(_configRepository.SelectedGroup);
+                    }
+                    else
+                    {
+                        SetConnectionString();
+                    }
+                }
+
+                if (itemEditor.Item.ItemType == ItemType.Script)
+                {
+                    SetConnectionString();
+                }
+            }
+
             if (e.KeyCode == Keys.F5)
             {
                 runButton_Click(sender, e);
@@ -158,7 +236,7 @@ namespace DbChecker
 
             if (e.Modifiers == Keys.Control && e.KeyCode == Keys.S)
             {
-                SaveButton_Click(null, null);
+                SaveModel();
                 return; // skip "falsefication"
             }
         }
@@ -177,22 +255,21 @@ namespace DbChecker
             switch (e.ItemType)
             {
                 case ItemType.ConnectionString:
-                {
                     var newName = SelectedConnectionStringName;
                     _configRepository.SaveConnectionString(newName, e.Value);
                     AddConnectionStrings();
                     connStrComboBox.SelectedIndex = connStrComboBox.FindStringExact(newName);
                     break;
-                }
+
                 case ItemType.Group:
                     var edg = sender as ItemEditor;
                     var group = _groups.Find(g => g.Guid == Guid.Parse(e.Id));
                     group.Name = edg.Item.Value;
                     _configRepository.SelectedGroup = group.Name;
-                    SaveButton_Click(null, null);
-
+                    SaveModel();
                     SetState();
                     break;
+
                 case ItemType.Script:
                     var eds = sender as ItemEditor;
                     var script = _groups
@@ -201,7 +278,7 @@ namespace DbChecker
                     script.Name = eds.Item.Value;
                     _uiBox.Page.Text = script.Name;
                     _configRepository.SelectedScript = script.Name;
-                    SaveButton_Click(null, null);
+                    SaveModel();
                     SetState();
                     break;
             }
@@ -222,12 +299,18 @@ namespace DbChecker
                 _configRepository.SelectedConnectionString = SelectedConnectionStringName;
             }
 
-            if (groupsControl.CurrentGroup != null)
+            SaveLastUsedGroupAndScript();
+            SaveModel();
+        }
+
+        private void SaveLastUsedGroupAndScript()
+        {
+            if (groupsControl.CurrentGroup != null && groupsControl.CurrentGroup.Name != GroupControl.NewGroupName)
             {
                 _configRepository.SelectedGroup = groupsControl.CurrentGroup.Name;
             }
 
-            if (_uiBox.Page != null)
+            if (_uiBox.Page != null && groupsControl.CurrentGroup.Name != GroupControl.NewGroupName)
             {
                 _configRepository.SelectedScript = _uiBox.Page.Text;
             }

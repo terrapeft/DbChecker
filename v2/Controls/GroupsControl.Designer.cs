@@ -1,6 +1,6 @@
 ﻿namespace DbChecker.Controls
 {
-    partial class GroupsControl
+    partial class GroupControl
     {
         /// <summary> 
         /// Required designer variable.
@@ -49,7 +49,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.comboBox1);
             this.Margin = new System.Windows.Forms.Padding(2);
-            this.Name = "GroupsControl";
+            this.Name = "GroupControl";
             this.Size = new System.Drawing.Size(305, 20);
             this.ResumeLayout(false);
 

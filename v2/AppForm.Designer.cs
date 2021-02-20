@@ -37,7 +37,7 @@ namespace DbChecker
             this.addNewTabPage = new System.Windows.Forms.TabPage();
             this.resultsBox = new DbChecker.Controls.ResultsBox();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.groupsControl = new DbChecker.Controls.GroupsControl();
+            this.groupsControl = new DbChecker.Controls.GroupControl();
             this.connStrComboBox = new System.Windows.Forms.ComboBox();
             this.itemEditor = new DbChecker.Controls.ItemEditor();
             this.runButton = new System.Windows.Forms.Button();
@@ -355,7 +355,7 @@ namespace DbChecker
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
         private System.Windows.Forms.ToolStripMenuItem saveGroupToolStripMenuItem;
-        private GroupsControl groupsControl;
+        private GroupControl groupsControl;
         private ItemEditor itemEditor;
         private ResultsBox resultsBox;
     }

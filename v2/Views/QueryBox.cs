@@ -14,6 +14,9 @@ namespace DbChecker.Views
         private static int _tabPageCount;
         private static int _queryCount;
 
+        private const string PlusTabPageName = "    +";
+
+        private bool _initializing = false;
         private Group _group;
         private ConfigRepository _configRepository;
         private TabControl _groupTabControl;
@@ -34,35 +37,71 @@ namespace DbChecker.Views
 
         public TabControl CreateBox()
         {
-            _groupTabControl = new TabControl();
-            _groupTabControl.Dock = DockStyle.Fill;
-            _groupTabControl.Name = "groupsTabControl";
-            _groupTabControl.MouseDoubleClick += GroupTabControlOnMouseDoubleClick;
+            _initializing = true;
 
-            foreach (var script in _group.Scripts)
+            try
             {
-                _groupTabControl.Controls.Add(CreateTabPage(_groupTabControl, script));
+                _groupTabControl = new TabControl();
+                _groupTabControl.Dock = DockStyle.Fill;
+                _groupTabControl.Name = "groupsTabControl";
+
+                _groupTabControl.MouseClick += (o, e) =>
+                {
+                    if (!(o is TabControl tc)) return;
+                    for (var i = 0; i < tc.TabCount; ++i)
+                    {
+                        if (tc.GetTabRect(i).Contains(e.Location))
+                        {
+                            var tp = tc.TabPages[i];
+                            if (tp.Text == PlusTabPageName)
+                            {
+                                var name = "Script " + ++_queryCount;
+                                var script = new Script { Name = name };
+                                _group.Scripts.Add(script);
+
+                                var newTab = CreateTabPage(_groupTabControl, script);
+                                _groupTabControl.Controls.RemoveByKey(tp.Name);
+                                _groupTabControl.Controls.Add(newTab);
+                                _groupTabControl.Controls.Add(tp);
+                                _groupTabControl.SelectTab(newTab);
+
+                                RenamingScript?.Invoke(this, newTab.Tag as Script);
+                            }
+                        }
+                    }
+                };
+
+                _groupTabControl.MouseDoubleClick += GroupTabControlOnMouseDoubleClick;
+
+                foreach (var script in _group.Scripts)
+                {
+                    _groupTabControl.Controls.Add(CreateTabPage(_groupTabControl, script));
+                }
+
+                CreatePlusTabPage(_groupTabControl);
+
+                _groupTabControl.SelectedTab = _groupTabControl.TabPages
+                    .Cast<TabPage>()
+                    .FirstOrDefault(p => p.Text == _configRepository.SelectedScript);
+
+                return _groupTabControl;
             }
-
-            CreatePlusTabPage(_groupTabControl);
-
-            _groupTabControl.SelectedTab = _groupTabControl.TabPages
-                .Cast<TabPage>()
-                .FirstOrDefault(p => p.Text == _configRepository.SelectedScript);
-
-            return _groupTabControl;
+            finally
+            {
+                _initializing = false;
+            }
         }
 
         private void GroupTabControlOnMouseDoubleClick(object sender, MouseEventArgs e)
         {
-            var tc = sender as TabControl;
-            if (tc != null)
+            if (!(sender is TabControl tc)) return;
+            for (var i = 0; i < tc.TabCount; ++i)
             {
-                for (var i = 0; i < tc.TabCount; ++i)
+                if (tc.GetTabRect(i).Contains(e.Location))
                 {
-                    if (tc.GetTabRect(i).Contains(e.Location))
+                    var tp = tc.TabPages[i];
+                    if (tp.Text != PlusTabPageName)
                     {
-                        var tp = tc.TabPages[i];
                         RenamingScript?.Invoke(this, tp.Tag as Script);
                     }
                 }
@@ -93,8 +132,6 @@ namespace DbChecker.Views
 
             menuItem.Click += (sender, args) =>
             {
-                //_group.Scripts.Remove(tabPage.Tag as Script);
-                //tabControl.Controls.Remove(tabPage);
                 DeletingScript?.Invoke(this, script);
             };
 
@@ -103,9 +140,6 @@ namespace DbChecker.Views
             tabPage.Text = script.Name;
             tabPage.Tag = script;
             tabPage.ContextMenu = new ContextMenu(new[] { menuItem } );
-
-            tabPage.DoubleClick += (sender, args) => { tabControl.Controls.RemoveByKey(tabPage.Name); };
-
             tabPage.Controls.Add(CreateQueryBox(script.Name, script.Text));
 
             return tabPage;
@@ -117,22 +151,8 @@ namespace DbChecker.Views
             var plusTabPage = new TabPage();
 
             plusTabPage.Name = "tabPagePlus";
-            plusTabPage.Text = "    +";
+            plusTabPage.Text = PlusTabPageName;
 
-            plusTabPage.Enter += (o, e) =>
-            {
-                var name = "Script " + ++_queryCount;
-                var script = new Script {Name = name};
-                _group.Scripts.Add(script);
-
-                var newTab = CreateTabPage(tabControl, script);
-                tabControl.Controls.RemoveByKey(plusTabPage.Name);
-                tabControl.Controls.Add(newTab);
-                tabControl.Controls.Add(plusTabPage);
-                tabControl.SelectTab(newTab);
-            };
-
-            //tabControl.Controls.RemoveByKey(tabPage.Name);
             tabControl.Controls.Add(plusTabPage);
 
             return plusTabPage;
