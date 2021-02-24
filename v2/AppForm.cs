@@ -4,8 +4,10 @@ using System.ComponentModel;
 using System.Configuration;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using DbChecker.Controls;
@@ -23,6 +25,8 @@ namespace DbChecker
         private IConfigRepository _configRepository;
         private List<Group> _groups;
         private QueryBox _uiBox;
+
+        private CancellationTokenSource cts;
 
         private const string DefaultGroupName = "New Group";
         private const string DefaultScriptName = "New Script";
@@ -183,23 +187,41 @@ namespace DbChecker
 
         private async void runButton_Click(object sender, EventArgs e)
         {
-            var runner = new SqlRunner(_uiBox.Script);
-            await runner.GetDataSet(SelectedConnectionString).ContinueWith(r =>
+            if (runButton.Tag == "cancel")
+            {
+                cts?.Cancel();
+                return;
+            }
+
+            runButton.Tag = "cancel";
+            progressBar.Visible = true;
+            cts = new CancellationTokenSource();
+            var runner = new SqlRunner(_uiBox.Script, cts.Token);
+            await runner.GetDataSet(SelectedConnectionString)
+                .ContinueWith(r =>
             {
                 if (r.Result?.Results?.Tables.Count > 0)
                 {
-                    resultsBox.BeginInvoke(new Action<DataSet>(SetTables), r.Result?.Results);
+                    //resultsBox.BeginInvoke(new Action<DataSet>(SetTables), r.Result?.Results);
+                    SetTables(r.Result?.Results);
                 }
                 else
                 {
-                    resultsBox.BeginInvoke(new Action<string>(SetText), r.Result?.Messages);
+                    //resultsBox.BeginInvoke(new Action<string>(SetText), r.Result?.Messages);
+                    SetText(r.Result?.Messages);
                 }
+
+                progressBar.Visible = false;
+                runButton.Tag = string.Empty;
+                resultsLabel.Text = string.Join("/", r.Result?.Results?.Tables
+                    .Cast<DataTable>()
+                    .Where(t => t.Rows.Count > 0) ?? Array.Empty<DataTable>());
             });
         }
 
         private void SetTables(DataSet dataSet)
         {
-            resultsBox.Tables = dataSet;
+            resultsBox.Dataset = dataSet;
         }
 
         private void SetText(string text)
@@ -315,5 +337,27 @@ namespace DbChecker
                 _configRepository.SelectedScript = _uiBox.Page.Text;
             }
         }
+
+        private void saveResultsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var dataObject = resultsBox.SelectedResult;
+            if (dataObject == null) return;
+
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                new CsvRepository(saveFileDialog1.FileName).SaveToFile(dataObject.GetData("Csv") as string);
+            }
+        }
+
+        private void saveAllResultsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (saveFileDialog1.ShowDialog() != DialogResult.OK) return;
+
+            foreach (var result in resultsBox.Results)
+            {
+                new CsvRepository(saveFileDialog1.FileName).SaveToFile(result.GetData("Csv") as string);
+            }
+        }
+
     }
 }

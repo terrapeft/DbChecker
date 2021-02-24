@@ -115,6 +115,7 @@
     <Compile Include="v2\Repositories\ConfigRepository.cs" />
     <Compile Include="v2\Global.cs" />
     <Compile Include="v2\Models\Group.cs" />
+    <Compile Include="v2\Repositories\CsvRepository.cs" />
     <Compile Include="v2\Repositories\SqlRepository.cs" />
     <Compile Include="v2\Models\Script.cs" />
     <Compile Include="v2\Repositories\FileRepository.cs" />

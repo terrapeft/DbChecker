@@ -6,19 +6,67 @@ namespace DbChecker.Controls
 {
     public partial class ResultsBox : UserControl
     {
-        public DataSet Tables
+        private DataSet _tables;
+
+        public DataSet Dataset
         {
-            //get;
             set
             {
+                _tables = value;
                 int k = 1;
                 tabControl1.TabPages.Clear();
-                foreach (DataTable dt in value.Tables)
+                foreach (DataTable dt in _tables.Tables)
                 {
                     var p = new TabPage($"Results {k++}");
                     p.Controls.Add(GetGridView(dt));
+                    p.Tag = dt;
                     tabControl1.TabPages.Add(p);
                 }
+            }
+        }
+
+        public DataObject SelectedResult
+        {
+            get
+            {
+                if (tabControl1.SelectedTab.Controls.Count > 0)
+                {
+                    var grid = tabControl1.SelectedTab.Controls[0] as DataGridView;
+                    if (grid != null)
+                    {
+                        grid.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableAlwaysIncludeHeaderText;
+                        grid.RowHeadersVisible = true;
+                        grid.SelectAll();
+                    }
+                    return grid?.GetClipboardContent();
+                }
+
+                return null;
+            }
+        }
+
+        public IEnumerable<DataObject> Results
+        {
+            get
+            {
+                var objs = new List<DataObject>();
+
+                foreach (TabPage page in tabControl1.TabPages)
+                {
+                    if (page.Controls.Count > 0)
+                    {
+                        if (page.Controls[0] is DataGridView grid)
+                        {
+                            grid.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableAlwaysIncludeHeaderText;
+                            grid.RowHeadersVisible = true;
+                            grid.SelectAll();
+
+                            objs.Add(grid.GetClipboardContent());
+                        }
+                    }
+                }
+
+                return objs;
             }
         }
 

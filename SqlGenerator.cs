@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace DbChecker
 {
-    public class SqlGenerator
+    public static class SqlGenerator
     {
         public static string GenerateSelectIntoTemp(DataTable dt, int batchSize = 10000)
         {
