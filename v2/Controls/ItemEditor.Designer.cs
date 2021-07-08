@@ -35,45 +35,49 @@
             // 
             // deleteButton
             // 
-            this.deleteButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.deleteButton.Image = global::DbChecker.Properties.Resources.iconfinder_trash_delete_remove_2931168;
-            this.deleteButton.Location = new System.Drawing.Point(347, 2);
+            this.deleteButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.deleteButton.Dock = System.Windows.Forms.DockStyle.Right;
+            this.deleteButton.ImageIndex = 1;
+            this.deleteButton.Location = new System.Drawing.Point(329, 0);
             this.deleteButton.Name = "deleteButton";
-            this.deleteButton.Size = new System.Drawing.Size(28, 28);
+            this.deleteButton.Size = new System.Drawing.Size(49, 20);
             this.deleteButton.TabIndex = 16;
+            this.deleteButton.Text = "Del";
             this.deleteButton.UseVisualStyleBackColor = true;
             this.deleteButton.Click += new System.EventHandler(this.deleteButton_Click);
             // 
             // saveButton
             // 
-            this.saveButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.saveButton.Image = global::DbChecker.Properties.Resources.iconfinder_save_guardar_diskette_2931176;
-            this.saveButton.Location = new System.Drawing.Point(316, 2);
+            this.saveButton.Dock = System.Windows.Forms.DockStyle.Right;
+            this.saveButton.ImageIndex = 0;
+            this.saveButton.Location = new System.Drawing.Point(280, 0);
             this.saveButton.Name = "saveButton";
-            this.saveButton.Size = new System.Drawing.Size(28, 28);
+            this.saveButton.Size = new System.Drawing.Size(49, 20);
             this.saveButton.TabIndex = 15;
+            this.saveButton.Text = "Save";
             this.saveButton.UseVisualStyleBackColor = true;
             this.saveButton.Click += new System.EventHandler(this.saveButton_Click);
             // 
             // connStrTextBox
             // 
-            this.connStrTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.connStrTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.connStrTextBox.Location = new System.Drawing.Point(3, 5);
+            this.connStrTextBox.Location = new System.Drawing.Point(0, 0);
             this.connStrTextBox.Name = "connStrTextBox";
-            this.connStrTextBox.Size = new System.Drawing.Size(307, 20);
+            this.connStrTextBox.Size = new System.Drawing.Size(274, 20);
             this.connStrTextBox.TabIndex = 14;
             // 
             // ItemEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.deleteButton);
             this.Controls.Add(this.saveButton);
+            this.Controls.Add(this.deleteButton);
             this.Controls.Add(this.connStrTextBox);
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "ItemEditor";
-            this.Size = new System.Drawing.Size(378, 29);
+            this.Size = new System.Drawing.Size(378, 20);
             this.ResumeLayout(false);
             this.PerformLayout();
 

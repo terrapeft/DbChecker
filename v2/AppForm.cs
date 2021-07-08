@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Configuration;
 using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using DbChecker.Controls;
 using DbChecker.Models;
@@ -21,8 +18,8 @@ namespace DbChecker
 {
     public partial class AppForm : Form
     {
-        private ISqlRepository _sqlRepository;
-        private IConfigRepository _configRepository;
+        private readonly IStorageRepository _sqlRepository;
+        private readonly IConfigRepository _configRepository;
         private List<Group> _groups;
         private QueryBox _uiBox;
 
@@ -49,19 +46,27 @@ namespace DbChecker
             _configRepository = new ConfigRepository();
             _sqlRepository = new SqlRepository();
 
+            Directory.CreateDirectory(_configRepository.SqlPath);
+
             groupsControl.SelectedGroupChanged += GroupsControl_SelectedGroupChanged;
             groupsControl.RenamingGroup += GroupsControl_RenamingGroup;
+
+            resultsLabel.Text = string.Empty;
+            startLabel.Text = string.Empty;
 
             SetState();
         }
 
         private void SetState()
         {
+            ShowProgressBar();
+
             AddConnectionStrings();
-            _groups = _sqlRepository.GetSql();
+            _groups = _sqlRepository.GetGroupNamesOrInit();
             groupsControl.Bind(_groups);
             groupsControl.SelectItem(_configRepository.SelectedGroup);
-            connStrComboBox.SelectedIndex = connStrComboBox.FindStringExact(_configRepository.SelectedConnectionString);
+
+            HideProgressBar();
         }
 
         private void GroupsControl_RenamingGroup(object sender, Group e)
@@ -107,19 +112,48 @@ namespace DbChecker
             var gr = g;
             if (g.Name == GroupControl.NewGroupName)
             {
-                gr = new Group
-                {
-                    Name = DefaultGroupName
-                };
-
+                CreateGroup();
                 _groups.Add(gr);
                 RenameGroup(gr);
             }
             else
             {
-                SetConnectionString();
+                SetConnectionStringValue();
             }
 
+            gr = _sqlRepository.ReadGroup(gr.Name);
+
+            CreateTheUIBox(gr);
+        }
+
+        private Group CreateGroupWithScript(string groupName = null, string scriptName = null)
+        {
+            var gr = CreateGroup(groupName);
+            gr.Scripts.Add(CreateScript(scriptName));
+
+            return gr;
+        }
+
+        private Script CreateScript(string name = null)
+        {
+            return new Script
+            {
+                Name = name,
+                ConnectionString = SelectedConnectionString
+            };
+        }
+
+
+        private Group CreateGroup(string name = null)
+        {
+            return new Group
+            {
+                Name = name ?? DefaultGroupName
+            };
+        }
+
+        private void CreateTheUIBox(Group gr)
+        {
             _uiBox = new QueryBox(gr);
             _uiBox.RenamingScript += UiBox_RenamingScript;
             _uiBox.DeletingScript += UiBox_DeletingScript;
@@ -151,7 +185,9 @@ namespace DbChecker
 
             if (connStrComboBox.Items.Count > 0)
             {
-                connStrComboBox.SelectedIndex = 0;
+                connStrComboBox.SelectedIndex = !string.IsNullOrEmpty(_configRepository.SelectedConnectionString)
+                    ? connStrComboBox.FindStringExact(_configRepository.SelectedConnectionString)
+                    : 0;
             }
         }
 
@@ -164,16 +200,16 @@ namespace DbChecker
         {
             if (_uiBox != null)
             {
-                _sqlRepository.PatchAndSave(_uiBox.GetModel());
+                _sqlRepository.SaveGroup(_uiBox.GetModel());
             }
         }
 
         private void connStrComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SetConnectionString();
+            SetConnectionStringValue();
         }
 
-        private void SetConnectionString()
+        private void SetConnectionStringValue()
         {
             var ei = new EditableItem
             {
@@ -193,30 +229,66 @@ namespace DbChecker
                 return;
             }
 
+            var startedAt = DateTime.Now;
+            startLabel.Text = $"Started at {startedAt:g}";
+
             runButton.Tag = "cancel";
-            progressBar.Visible = true;
+            runButton.Text = "Cancel";
+            runButton.BackColor = Color.LightCoral;
+
+            SetTables(null);
+            //SetText();
+            ShowProgressBar();
             cts = new CancellationTokenSource();
-            var runner = new SqlRunner(_uiBox.Script, cts.Token);
-            await runner.GetDataSet(SelectedConnectionString)
+            var script = _uiBox.HasTextSelection ? _uiBox.TextSelection : _uiBox.Script;
+            var runner = new SqlRunner(script, cts.Token);
+            await runner
+                .GetDataSet(SelectedConnectionString)
                 .ContinueWith(r =>
             {
                 if (r.Result?.Results?.Tables.Count > 0)
                 {
-                    //resultsBox.BeginInvoke(new Action<DataSet>(SetTables), r.Result?.Results);
-                    SetTables(r.Result?.Results);
+                    resultsBox.BeginInvoke(new Action<DataSet>(SetTables), r.Result?.Results);
                 }
                 else
                 {
-                    //resultsBox.BeginInvoke(new Action<string>(SetText), r.Result?.Messages);
-                    SetText(r.Result?.Messages);
+                    resultsBox.BeginInvoke(new Action<string>(SetText), r.Result?.Messages);
                 }
 
-                progressBar.Visible = false;
-                runButton.Tag = string.Empty;
-                resultsLabel.Text = string.Join("/", r.Result?.Results?.Tables
-                    .Cast<DataTable>()
-                    .Where(t => t.Rows.Count > 0) ?? Array.Empty<DataTable>());
+                this.BeginInvoke(new Action<DataTableCollection, Script, DateTime> (QueryFinished), r.Result?.Results?.Tables, _uiBox.Script, startedAt);
             });
+        }
+
+        private void ShowProgressBar()
+        {
+            progressBar.Visible = true;
+        }
+
+        private void HideProgressBar()
+        {
+            progressBar.Visible = false;
+        }
+
+        private void QueryFinished(DataTableCollection tables, Script script, DateTime startedAt)
+        {
+            HideProgressBar();
+
+            script.ConnectionString = SelectedConnectionString;
+
+            runButton.Tag = string.Empty;
+            runButton.Text = "Run";
+            runButton.BackColor = Color.LightGreen;
+
+            if (tables != null)
+            {
+                resultsLabel.Text = "Results: " + string.Join("/", tables
+                    .Cast<DataTable>()
+                    .Where(t => t.Rows.Count > 0)
+                    .Select(t => t.Rows.Count)
+                );
+            }
+
+            startLabel.Text = $"Elapsed time: {(DateTime.Now - startedAt):g}";
         }
 
         private void SetTables(DataSet dataSet)
@@ -241,13 +313,13 @@ namespace DbChecker
                     }
                     else
                     {
-                        SetConnectionString();
+                        SetConnectionStringValue();
                     }
                 }
 
                 if (itemEditor.Item.ItemType == ItemType.Script)
                 {
-                    SetConnectionString();
+                    SetConnectionStringValue();
                 }
             }
 
@@ -268,7 +340,12 @@ namespace DbChecker
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 var dt = CsvFileReader.Load(openFileDialog1.FileName);
-                //_uiBox.Script queryTextbox.Text = SqlGenerator.GenerateSelectIntoTemp(dt);
+                if (_uiBox == null)
+                {
+                    CreateTheUIBox(CreateGroupWithScript("CSV Generator", Path.GetFileName(openFileDialog1.FileName)));
+                }
+
+                _uiBox.SetTextForCurrentTab(SqlGenerator.GenerateSelectIntoTemp(dt));
             }
         }
 
@@ -322,7 +399,11 @@ namespace DbChecker
             }
 
             SaveLastUsedGroupAndScript();
-            SaveModel();
+
+            if (ModifierKeys != Keys.Control)
+            {
+                SaveModel();
+            }
         }
 
         private void SaveLastUsedGroupAndScript()
@@ -332,7 +413,7 @@ namespace DbChecker
                 _configRepository.SelectedGroup = groupsControl.CurrentGroup.Name;
             }
 
-            if (_uiBox.Page != null && groupsControl.CurrentGroup.Name != GroupControl.NewGroupName)
+            if (_uiBox?.Page != null && groupsControl.CurrentGroup?.Name != GroupControl.NewGroupName)
             {
                 _configRepository.SelectedScript = _uiBox.Page.Text;
             }
@@ -340,6 +421,8 @@ namespace DbChecker
 
         private void saveResultsToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            ShowProgressBar();
+
             var dataObject = resultsBox.SelectedResult;
             if (dataObject == null) return;
 
@@ -347,17 +430,41 @@ namespace DbChecker
             {
                 new CsvRepository(saveFileDialog1.FileName).SaveToFile(dataObject.GetData("Csv") as string);
             }
+
+            HideProgressBar();
         }
 
         private void saveAllResultsToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            ShowProgressBar();
+
             if (saveFileDialog1.ShowDialog() != DialogResult.OK) return;
 
             foreach (var result in resultsBox.Results)
             {
-                new CsvRepository(saveFileDialog1.FileName).SaveToFile(result.GetData("Csv") as string);
+                new CsvRepository($"{saveFileDialog1.FileName}_{result.Name}").SaveToFile(result.DataObject.GetData("Csv") as string);
             }
+
+            HideProgressBar();
         }
 
+        //private void iconsToolStripMenuItem_Click(object sender, EventArgs e)
+        //{
+        //    MessageBox.Show("Icons taken on https://icons8.ru", "Icons");
+        //}
+
+        private void generateFromValuesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                var dt = CsvFileReader.Load(openFileDialog1.FileName);
+                if (_uiBox == null)
+                {
+                    CreateTheUIBox(CreateGroupWithScript("CSV Generator", Path.GetFileName(openFileDialog1.FileName)));
+                }
+
+                _uiBox.SetTextForCurrentTab(SqlGenerator.GenerateSelectFromValues(dt));
+            }
+        }
     }
 }

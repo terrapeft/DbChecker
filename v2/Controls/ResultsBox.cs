@@ -13,8 +13,11 @@ namespace DbChecker.Controls
             set
             {
                 _tables = value;
-                int k = 1;
+                var k = 1;
                 tabControl1.TabPages.Clear();
+
+                if (value == null) return;
+
                 foreach (DataTable dt in _tables.Tables)
                 {
                     var p = new TabPage($"Results {k++}");
@@ -45,11 +48,11 @@ namespace DbChecker.Controls
             }
         }
 
-        public IEnumerable<DataObject> Results
+        public IEnumerable<GridViewPage> Results
         {
             get
             {
-                var objs = new List<DataObject>();
+                var objs = new List<GridViewPage>();
 
                 foreach (TabPage page in tabControl1.TabPages)
                 {
@@ -61,7 +64,7 @@ namespace DbChecker.Controls
                             grid.RowHeadersVisible = true;
                             grid.SelectAll();
 
-                            objs.Add(grid.GetClipboardContent());
+                            objs.Add(new GridViewPage(grid.Text, grid.GetClipboardContent()));
                         }
                     }
                 }

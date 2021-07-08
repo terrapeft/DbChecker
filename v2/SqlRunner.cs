@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using DbChecker.Models;
-using System.Timers;
 using Timer = System.Timers.Timer;
 
 namespace DbChecker
@@ -70,7 +67,7 @@ namespace DbChecker
                 {
                     result.Messages = ex.Message;
                 }
-            });
+            }, _ctsToken);
 
             return result;
         }

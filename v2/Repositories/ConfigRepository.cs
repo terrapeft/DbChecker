@@ -10,17 +10,11 @@ namespace DbChecker.Repositories
 {
     public class ConfigRepository : IConfigRepository
     {
-        public string SqlFilePath
-        {
-            get => ConfigurationManager.AppSettings.Get("sqlFilePath");
-            set { }
-        }
+        public string SqlFilePath => ConfigurationManager.AppSettings.Get("sqlFilePath");
 
-        public string DefaultQuery
-        {
-            get => ConfigurationManager.AppSettings.Get("defaultQuery");
-            set { }
-        }
+        public string SqlPath => ConfigurationManager.AppSettings.Get("sqlPath");
+
+        public string DefaultQuery => ConfigurationManager.AppSettings.Get("defaultQuery");
 
         public string SelectedConnectionString {
             get
@@ -118,8 +112,9 @@ namespace DbChecker.Repositories
 
     public interface IConfigRepository
     {
-        string SqlFilePath { get; set; }
-        string DefaultQuery { get; set; }
+        string SqlFilePath { get; }
+        string SqlPath { get; }
+        string DefaultQuery { get; }
         string SelectedConnectionString { get; set; }
         string SelectedGroup { get; set; }
         string SelectedScript { get; set; }

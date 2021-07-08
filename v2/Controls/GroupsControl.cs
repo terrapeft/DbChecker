@@ -24,13 +24,13 @@ namespace DbChecker.Controls
         {
             comboBox1.Items.Clear();
             comboBox1.Text = string.Empty;
+            comboBox1.DisplayMember = "Name";
+            comboBox1.ValueMember = "Guid";
 
             comboBox1.Items.Add(new Group { Name = NewGroupName });
 
             foreach (var group in groups)
             {
-                comboBox1.DisplayMember = "Name";
-                comboBox1.ValueMember = "Guid";
                 comboBox1.Items.Add(group);
             }
         }

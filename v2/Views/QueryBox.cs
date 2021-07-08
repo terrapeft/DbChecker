@@ -17,22 +17,41 @@ namespace DbChecker.Views
         private const string PlusTabPageName = "    +";
 
         private bool _initializing = false;
-        private Group _group;
-        private ConfigRepository _configRepository;
+        private readonly Group _group;
+        private readonly ConfigRepository _configRepository;
         private TabControl _groupTabControl;
 
         public TabPage Page => _groupTabControl.SelectedTab;
 
-        public Script Script => _groupTabControl.SelectedTab.Tag as Script;
+        public FastColoredTextBox TextBox => _groupTabControl.SelectedTab?.Controls[0] as FastColoredTextBox;
+
+        public Script Script
+        {
+            get
+            {
+                UpdateModel();
+                return _groupTabControl.SelectedTab?.Tag as Script;
+            }
+        }
+
+        public bool HasTextSelection => TextBox?.SelectedText.Length > 0;
+
+        public Script TextSelection => new Script {Text = TextBox.SelectedText, Name = "Selection", Guid = Guid.Empty};
 
         public event EventHandler<Script> RenamingScript;
         public event EventHandler<Script> DeletingScript;
-
 
         public QueryBox(Group groupResults)
         {
             _group = groupResults;
             _configRepository = new ConfigRepository();
+        }
+        public void SetTextForCurrentTab(string text)
+        {
+            if (Page.Controls[0] is FastColoredTextBox box)
+            {
+                box.Text = text;
+            }
         }
 
         public TabControl CreateBox()
@@ -113,6 +132,13 @@ namespace DbChecker.Views
         /// </summary>
         public Group GetModel()
         {
+            UpdateModel();
+            return _group;
+        }
+
+
+        public void UpdateModel()
+        {
             foreach (TabPage page in _groupTabControl.TabPages)
             {
                 if (page.Tag is Script script)
@@ -121,8 +147,6 @@ namespace DbChecker.Views
                     script.Text = textBox.Text;
                 }
             }
-
-            return _group;
         }
 
         private TabPage CreateTabPage(TabControl tabControl, Script script)
@@ -182,7 +206,7 @@ namespace DbChecker.Views
         #region Common handlers
         private void qBox_TextChangedDelayed(object sender, TextChangedEventArgs e)
         {
-            if (sender is FastColoredTextBox qBox) Script.Text = qBox.Text;
+            //if (sender is FastColoredTextBox qBox) Script.Text = qBox.Text;
 
             //if (sender is FastColoredTextBox qBox)
             //{
