@@ -12,13 +12,10 @@ namespace DbChecker.Models
         string Name { get; set; }
         Guid Guid { get; set; }
         string ConnectionString { get; set; }
-        string ConnectionStringComment { get; }
     }
 
     public class Script : IScript
     {
-        internal const string CONNSTR_COMMENT = "-- >> ";
-
         public Script()
         {
             Guid = Guid.NewGuid();
@@ -28,6 +25,5 @@ namespace DbChecker.Models
         public string Name { get; set; }
         public Guid Guid { get; set; }
         public string ConnectionString { get; set; }
-        public string ConnectionStringComment => CONNSTR_COMMENT + ConnectionString;
     }
 }

@@ -15,15 +15,19 @@ namespace DbChecker.Views
         private static int _queryCount;
 
         private const string PlusTabPageName = "    +";
+        private const string ScriptName = "Script ";
 
         private bool _initializing = false;
         private readonly Group _group;
-        private readonly ConfigRepository _configRepository;
+        private readonly IConfigRepository _configRepository;
+        private readonly IStorageRepository _storageRepository;
         private TabControl _groupTabControl;
 
         public TabPage Page => _groupTabControl.SelectedTab;
 
         public FastColoredTextBox TextBox => _groupTabControl.SelectedTab?.Controls[0] as FastColoredTextBox;
+
+        public Group Group => _group;
 
         public Script Script
         {
@@ -45,6 +49,7 @@ namespace DbChecker.Views
         {
             _group = groupResults;
             _configRepository = new ConfigRepository();
+            _storageRepository = new SqlRepository();
         }
         public void SetTextForCurrentTab(string text)
         {
@@ -57,6 +62,9 @@ namespace DbChecker.Views
         public TabControl CreateBox()
         {
             _initializing = true;
+
+            _queryCount = _storageRepository.GetScriptNameIndex(_group.Name, ScriptName);
+            _queryCount--;
 
             try
             {

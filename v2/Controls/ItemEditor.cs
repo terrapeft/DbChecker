@@ -30,6 +30,13 @@ namespace DbChecker.Controls
             }
         }
 
+        public void SetFocus()
+        {
+            connStrTextBox.Focus();
+            connStrTextBox.SelectAll();
+        }
+
+
         private void saveButton_Click(object sender, EventArgs e)
         {
             SavingItem?.Invoke(this, Item);
@@ -38,6 +45,15 @@ namespace DbChecker.Controls
         private void deleteButton_Click(object sender, EventArgs e)
         {
             DeletingItem?.Invoke(this, Item);
+        }
+
+        private void connStrTextBox_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Modifiers == Keys.Control && e.KeyCode == Keys.S)
+            {
+                saveButton_Click(sender, null);
+                e.Handled = true;
+            }
         }
     }
 }

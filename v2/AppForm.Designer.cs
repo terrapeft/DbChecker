@@ -36,10 +36,9 @@ namespace DbChecker
             this.queryAndResultsSplitContainer = new System.Windows.Forms.SplitContainer();
             this.groupsTabControl = new System.Windows.Forms.TabControl();
             this.addNewTabPage = new System.Windows.Forms.TabPage();
-            this.resultsBox = new DbChecker.Controls.ResultsBox();
+            this.resultsGridContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.itemEditor = new DbChecker.Controls.ItemEditor();
-            this.groupsControl = new DbChecker.Controls.GroupControl();
             this.connStrComboBox = new System.Windows.Forms.ComboBox();
             this.runButton = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
@@ -58,16 +57,17 @@ namespace DbChecker
             this.resultsLabel = new System.Windows.Forms.Label();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.startLabel = new System.Windows.Forms.Label();
-            this.resultsGridContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.resultsBox = new DbChecker.Controls.ResultsBox();
+            this.itemEditor = new DbChecker.Controls.ItemEditor();
+            this.groupsControl = new DbChecker.Controls.GroupControl();
             ((System.ComponentModel.ISupportInitialize)(this.queryAndResultsSplitContainer)).BeginInit();
             this.queryAndResultsSplitContainer.Panel1.SuspendLayout();
             this.queryAndResultsSplitContainer.Panel2.SuspendLayout();
             this.queryAndResultsSplitContainer.SuspendLayout();
             this.groupsTabControl.SuspendLayout();
+            this.resultsGridContextMenuStrip.SuspendLayout();
             this.panel1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
-            this.resultsGridContextMenuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // queryAndResultsSplitContainer
@@ -111,15 +111,19 @@ namespace DbChecker
             this.addNewTabPage.Text = "+";
             this.addNewTabPage.UseVisualStyleBackColor = true;
             // 
-            // resultsBox
+            // resultsGridContextMenuStrip
             // 
-            this.resultsBox.ContextMenuStrip = this.resultsGridContextMenuStrip;
-            this.resultsBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.resultsBox.Location = new System.Drawing.Point(0, 0);
-            this.resultsBox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.resultsBox.Name = "resultsBox";
-            this.resultsBox.Size = new System.Drawing.Size(880, 231);
-            this.resultsBox.TabIndex = 0;
+            this.resultsGridContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.saveToolStripMenuItem});
+            this.resultsGridContextMenuStrip.Name = "resultsGridContextMenuStrip";
+            this.resultsGridContextMenuStrip.Size = new System.Drawing.Size(134, 26);
+            // 
+            // saveToolStripMenuItem
+            // 
+            this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
+            this.saveToolStripMenuItem.Text = "Save Result";
+            this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveResultsToolStripMenuItem_Click);
             // 
             // panel1
             // 
@@ -133,31 +137,6 @@ namespace DbChecker
             this.panel1.Size = new System.Drawing.Size(880, 54);
             this.panel1.TabIndex = 2;
             // 
-            // itemEditor
-            // 
-            this.itemEditor.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            editableItem1.Id = null;
-            editableItem1.ItemType = DbChecker.ItemType.ConnectionString;
-            editableItem1.Value = "";
-            this.itemEditor.Item = editableItem1;
-            this.itemEditor.Location = new System.Drawing.Point(3, 31);
-            this.itemEditor.Margin = new System.Windows.Forms.Padding(2);
-            this.itemEditor.Name = "itemEditor";
-            this.itemEditor.Size = new System.Drawing.Size(791, 20);
-            this.itemEditor.TabIndex = 8;
-            this.itemEditor.DeletingItem += new System.EventHandler<DbChecker.Models.EditableItem>(this.itemEditor_OnDelete);
-            this.itemEditor.SavingItem += new System.EventHandler<DbChecker.Models.EditableItem>(this.itemEditor_OnSave);
-            // 
-            // groupsControl
-            // 
-            this.groupsControl.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupsControl.Location = new System.Drawing.Point(417, 6);
-            this.groupsControl.Margin = new System.Windows.Forms.Padding(2);
-            this.groupsControl.Name = "groupsControl";
-            this.groupsControl.Size = new System.Drawing.Size(459, 21);
-            this.groupsControl.TabIndex = 2;
-            // 
             // connStrComboBox
             // 
             this.connStrComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
@@ -166,7 +145,7 @@ namespace DbChecker
             this.connStrComboBox.Location = new System.Drawing.Point(3, 6);
             this.connStrComboBox.Margin = new System.Windows.Forms.Padding(2);
             this.connStrComboBox.Name = "connStrComboBox";
-            this.connStrComboBox.Size = new System.Drawing.Size(410, 21);
+            this.connStrComboBox.Size = new System.Drawing.Size(537, 21);
             this.connStrComboBox.TabIndex = 1;
             this.connStrComboBox.SelectedIndexChanged += new System.EventHandler(this.connStrComboBox_SelectedIndexChanged);
             // 
@@ -314,19 +293,40 @@ namespace DbChecker
             this.startLabel.TabIndex = 6;
             this.startLabel.Text = "startLabel";
             // 
-            // resultsGridContextMenuStrip
+            // resultsBox
             // 
-            this.resultsGridContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.saveToolStripMenuItem});
-            this.resultsGridContextMenuStrip.Name = "resultsGridContextMenuStrip";
-            this.resultsGridContextMenuStrip.Size = new System.Drawing.Size(181, 48);
+            this.resultsBox.ContextMenuStrip = this.resultsGridContextMenuStrip;
+            this.resultsBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.resultsBox.Location = new System.Drawing.Point(0, 0);
+            this.resultsBox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.resultsBox.Name = "resultsBox";
+            this.resultsBox.Size = new System.Drawing.Size(880, 231);
+            this.resultsBox.TabIndex = 0;
             // 
-            // saveToolStripMenuItem
+            // itemEditor
             // 
-            this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.saveToolStripMenuItem.Text = "Save Result";
-            this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveResultsToolStripMenuItem_Click);
+            this.itemEditor.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            editableItem1.Id = null;
+            editableItem1.ItemType = DbChecker.ItemType.ConnectionString;
+            editableItem1.Value = "";
+            this.itemEditor.Item = editableItem1;
+            this.itemEditor.Location = new System.Drawing.Point(3, 31);
+            this.itemEditor.Margin = new System.Windows.Forms.Padding(2);
+            this.itemEditor.Name = "itemEditor";
+            this.itemEditor.Size = new System.Drawing.Size(791, 20);
+            this.itemEditor.TabIndex = 8;
+            this.itemEditor.DeletingItem += new System.EventHandler<DbChecker.Models.EditableItem>(this.itemEditor_OnDelete);
+            this.itemEditor.SavingItem += new System.EventHandler<DbChecker.Models.EditableItem>(this.itemEditor_OnSave);
+            // 
+            // groupsControl
+            // 
+            this.groupsControl.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupsControl.Location = new System.Drawing.Point(544, 6);
+            this.groupsControl.Margin = new System.Windows.Forms.Padding(2);
+            this.groupsControl.Name = "groupsControl";
+            this.groupsControl.Size = new System.Drawing.Size(332, 21);
+            this.groupsControl.TabIndex = 2;
             // 
             // AppForm
             // 
@@ -341,7 +341,6 @@ namespace DbChecker
             this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.statusStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.KeyPreview = true;
             this.Name = "AppForm";
             this.Text = "DB Helper 2.0";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.AppForm_FormClosing);
@@ -351,10 +350,10 @@ namespace DbChecker
             ((System.ComponentModel.ISupportInitialize)(this.queryAndResultsSplitContainer)).EndInit();
             this.queryAndResultsSplitContainer.ResumeLayout(false);
             this.groupsTabControl.ResumeLayout(false);
+            this.resultsGridContextMenuStrip.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
-            this.resultsGridContextMenuStrip.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 

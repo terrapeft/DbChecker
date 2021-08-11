@@ -25,8 +25,16 @@ namespace DbChecker
 
         private CancellationTokenSource cts;
 
-        private const string DefaultGroupName = "New Group";
-        private const string DefaultScriptName = "New Script";
+        private const string _defaultGroupName = "Common Scripts";
+
+        public string DefaultGroupName
+        {
+            get
+            {
+                var ix = _sqlRepository.GetGroupNameIndex(_defaultGroupName);
+                return ix > 0 ? $"{_defaultGroupName} {ix}": _defaultGroupName;
+            }
+        }
 
         public string SelectedConnectionString
         {
@@ -72,10 +80,10 @@ namespace DbChecker
         private void GroupsControl_RenamingGroup(object sender, Group e)
         {
             if (e == null) return;
-            RenameGroup(e);
+            SetItemEditor(e);
         }
 
-        private void RenameGroup(Group group)
+        private void SetItemEditor(Group group)
         {
             itemEditor.Item = new EditableItem
             {
@@ -88,10 +96,10 @@ namespace DbChecker
         private void UiBox_RenamingScript(object sender, Script e)
         {
             if (e == null) return;
-            RenameScript(e);
+            SetItemEditor(e);
         }
 
-        private void RenameScript(Script script)
+        private void SetItemEditor(Script script)
         {
             itemEditor.Item = new EditableItem
             {
@@ -112,18 +120,25 @@ namespace DbChecker
             var gr = g;
             if (g.Name == GroupControl.NewGroupName)
             {
-                CreateGroup();
+                gr = CreateGroup();
                 _groups.Add(gr);
-                RenameGroup(gr);
+                SetItemEditor(gr);
             }
             else
             {
                 SetConnectionStringValue();
             }
 
-            gr = _sqlRepository.ReadGroup(gr.Name);
+            //if (g.Name != GroupControl.NewGroupName)
+            //{
+                gr = _sqlRepository.ReadGroup(gr.Name);
+                if (gr != null)
+                {
+                    CreateTheUIBox(gr);
+                }
+                //}
 
-            CreateTheUIBox(gr);
+            itemEditor.SetFocus();
         }
 
         private Group CreateGroupWithScript(string groupName = null, string scriptName = null)
@@ -163,14 +178,23 @@ namespace DbChecker
 
         private void UiBox_DeletingScript(object sender, Script e)
         {
+            // delete from model
             var group = _groups.FirstOrDefault(g => g.Scripts.Contains(g.Scripts.FirstOrDefault(s => s.Guid == e.Guid)));
-            var script = _groups
-                .SelectMany(g => g.Scripts)
-                .FirstOrDefault(s => s.Guid == e.Guid);
 
-            group.Scripts.Remove(script);
+            if (group != null)
+            {
+                var script = group.Scripts.FirstOrDefault(s => s.Guid == e.Guid);
 
-            SaveModel();
+                if (script != null)
+                {
+                    group.Scripts.Remove(script);
+                }
+            }
+
+            // delete file
+            var gr = _uiBox.GetModel();
+            _sqlRepository.DeleteScript(gr.Name, e);
+
             SetState();
         }
 
@@ -362,22 +386,27 @@ namespace DbChecker
 
                 case ItemType.Group:
                     var edg = sender as ItemEditor;
-                    var group = _groups.Find(g => g.Guid == Guid.Parse(e.Id));
-                    group.Name = edg.Item.Value;
-                    _configRepository.SelectedGroup = group.Name;
+                    if (_uiBox == null)
+                    {
+                        var group = _groups.Find(g => g.Guid == Guid.Parse(e.Id));
+                        group.Name = edg.Item.Value;
+                        CreateTheUIBox(group);
+                    }
+                    _configRepository.SelectedGroup = edg.Item.Value;
                     SaveModel();
                     SetState();
+
                     break;
 
                 case ItemType.Script:
                     var eds = sender as ItemEditor;
-                    var script = _groups
-                        .SelectMany(g => g.Scripts)
+                    var oldName = _uiBox.Script.Name;
+                    var m = _uiBox.GetModel();
+                    var script = m.Scripts
                         .FirstOrDefault(s => s.Guid == Guid.Parse(e.Id));
-                    script.Name = eds.Item.Value;
-                    _uiBox.Page.Text = script.Name;
-                    _configRepository.SelectedScript = script.Name;
-                    SaveModel();
+                    script.Name = e.Value;
+                    _uiBox.Page.Text = e.Value;
+                    _configRepository.SelectedScript = e.Value;
                     SetState();
                     break;
             }

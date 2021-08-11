@@ -67,6 +67,7 @@
             this.connStrTextBox.Name = "connStrTextBox";
             this.connStrTextBox.Size = new System.Drawing.Size(274, 20);
             this.connStrTextBox.TabIndex = 14;
+            this.connStrTextBox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.connStrTextBox_KeyUp);
             // 
             // ItemEditor
             // 
