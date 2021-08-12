@@ -73,6 +73,8 @@ namespace DbChecker
 
         #region Private methods
 
+        #region Common
+
         private void StartRenaming(string text, ItemType type)
         {
             _currentItemType = type;
@@ -93,15 +95,23 @@ namespace DbChecker
             progressBar.Visible = false;
         }
 
-        private void SetTables(DataSet dataSet)
+        private void PublishResults(DataSet dataSet)
         {
             resultsBox.Dataset = dataSet;
         }
 
-        private void SetText(string text)
+        private void ShowResultMessage(string text)
         {
             resultsBox.Messages = text;
         }
+
+        private void SaveCurrentGroup()
+        {
+            var group = _currentGroupBox.GetModel(SelectedGroupName);
+            _storageRepository.SaveGroup(group);
+        }
+
+        #endregion
 
         #region Group Names
 
@@ -116,6 +126,11 @@ namespace DbChecker
         private void SelectGroupName(string name)
         {
             groupNamesComboBox.SelectedIndex = groupNamesComboBox.FindStringExact(name);
+
+            if (groupNamesComboBox.SelectedIndex == -1 && groupNamesComboBox.Items.Count > 1)
+            {
+                groupNamesComboBox.SelectedIndex = 1; // do not select the NewGroupName;
+            }
         }
 
         private bool HasSelectedGroup()
@@ -182,6 +197,8 @@ namespace DbChecker
 
         private void GroupBoxOnDeletingScript(object sender, string e)
         {
+            _storageRepository.DeleteScript(SelectedGroupName, e);
+            _currentGroupBox.RemoveSelectedTab();
         }
 
         private void GroupBoxOnRenamingScript(object sender, string e)
@@ -234,14 +251,16 @@ namespace DbChecker
                     var newName = SelectedConnectionStringName;
                     _configRepository.SaveConnectionString(newName, SelectedValue);
                     AddConnectionStrings();
-                    SelectConnectionString(newName);
+                    SelectConnectionString(newName); // works for a new item
+                    _currentGroupBox.SetFocus();
                     break;
 
                 case ItemType.Group:
                     _storageRepository.CreateOrRenameGroup(SelectedValue, _currentItemOriginalValue);
                     AddGroupNames(_storageRepository.ReadGroupNames());
                     SelectGroupName(SelectedValue);
-                    SelectConnectionString(SelectedConnectionString);
+                    StartRenaming(SelectedConnectionString, ItemType.ConnectionString); // works for the current item, which doesn't generate the SelectedIndexChanged event
+                    _currentGroupBox.SetFocus();
                     break;
 
                 case ItemType.Script:
@@ -251,12 +270,38 @@ namespace DbChecker
                         return;
                     }
 
-                    _storageRepository.SaveScript(SelectedGroupName, new Script { Name = SelectedValue, Text = SelectedScriptSource });
+                    _storageRepository.SaveOrRenameScript(SelectedGroupName, _currentItemOriginalValue, SelectedValue, SelectedScriptSource);
+                    _currentGroupBox.TabText = SelectedValue;
 
-                    //SelectConnectionString(SelectedConnectionString);
+                    StartRenaming(SelectedConnectionString, ItemType.ConnectionString); // works for the current item, which doesn't generate the SelectedIndexChanged event
+                    _currentGroupBox.SetFocus();
                     break;
             }
         }
+
+        private void deleteButton_Click(object sender, EventArgs e)
+        {
+            switch (_currentItemType)
+            {
+                case ItemType.ConnectionString:
+                    _configRepository.DeleteConnectionString(SelectedConnectionStringName);
+                    AddConnectionStrings();
+                    break;
+
+                case ItemType.Group:
+                    _storageRepository.DeleteGroup(SelectedGroupName);
+                    AddGroupNames(_storageRepository.ReadGroupNames());
+                    SelectGroupName(_configRepository.SelectedGroup);
+                    StartRenaming(SelectedConnectionString, ItemType.ConnectionString); // works for the current item, which doesn't generate the SelectedIndexChanged event
+                    break;
+
+                case ItemType.Script:
+                    GroupBoxOnDeletingScript(this, _currentGroupBox.TabText);
+                    StartRenaming(SelectedConnectionString, ItemType.ConnectionString); // works for the current item, which doesn't generate the SelectedIndexChanged event
+                    break;
+            }
+        }
+
 
         private void MainWindow_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -269,8 +314,7 @@ namespace DbChecker
 
             if (ModifierKeys != Keys.Control)
             {
-                var group = _currentGroupBox.GetModel(SelectedGroupName);
-                _storageRepository.SaveGroup(group);
+                SaveCurrentGroup();
             }
         }
 
@@ -289,8 +333,7 @@ namespace DbChecker
             runButton.Text = "Cancel";
             runButton.BackColor = Color.LightCoral;
 
-            SetTables(null);
-            //SetText();
+            PublishResults(null);
             ShowProgressBar();
             cts = new CancellationTokenSource();
             var script = _currentGroupBox.HasSelectedText ? _currentGroupBox.SelectedText : _currentGroupBox.Text;
@@ -301,11 +344,11 @@ namespace DbChecker
                 {
                     if (r.Result?.Results?.Tables.Count > 0)
                     {
-                        resultsBox.BeginInvoke(new Action<DataSet>(SetTables), r.Result?.Results);
+                        resultsBox.BeginInvoke(new Action<DataSet>(PublishResults), r.Result?.Results);
                     }
                     else
                     {
-                        resultsBox.BeginInvoke(new Action<string>(SetText), r.Result?.Messages);
+                        resultsBox.BeginInvoke(new Action<string>(ShowResultMessage), r.Result?.Messages);
                     }
 
                     this.BeginInvoke(new Action<DataTableCollection, DateTime>(QueryFinished), r.Result?.Results?.Tables, startedAt);
@@ -331,6 +374,87 @@ namespace DbChecker
 
             startLabel.Text = $"Elapsed time: {(DateTime.Now - startedAt):g}";
         }
+
+        private void MainWindow_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Escape)
+            {
+                if (_currentItemType == ItemType.Group)
+                {
+                    if (SelectedGroupName == NewGroupName)
+                    {
+                        SelectGroupName(_configRepository.SelectedGroup);
+                    }
+                }
+
+                StartRenaming(SelectedConnectionString, ItemType.ConnectionString);
+                _currentGroupBox.SetFocus();
+            }
+
+            if (e.KeyCode == Keys.F5)
+            {
+                runButton_Click(sender, e);
+            }
+
+            if (e.Modifiers == Keys.Control && e.KeyCode == Keys.S)
+            {
+                SaveCurrentGroup();
+                return; // skip "falsefication"
+            }
+        }
+
+        private void generateInsertToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                var dt = CsvFileReader.Load(openFileDialog1.FileName);
+                _currentGroupBox.AppendTextToCurrentTab(SqlGenerator.GenerateSelectIntoTemp(dt));
+            }
+        }
+
+        private void generateFromValuesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                var dt = CsvFileReader.Load(openFileDialog1.FileName);
+                _currentGroupBox.AppendTextToCurrentTab(SqlGenerator.GenerateSelectFromValues(dt));
+            }
+        }
+
+        private void saveAllResultsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ShowProgressBar();
+
+            if (saveFileDialog1.ShowDialog() != DialogResult.OK) return;
+
+            foreach (var result in resultsBox.Results)
+            {
+                new CsvRepository($"{saveFileDialog1.FileName}_{result.Name}").SaveToFile(result.DataObject.GetData("Csv") as string);
+            }
+
+            HideProgressBar();
+        }
+
+        private void saveResultsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ShowProgressBar();
+
+            var dataObject = resultsBox.SelectedResult;
+            if (dataObject == null) return;
+
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                new CsvRepository(saveFileDialog1.FileName).SaveToFile(dataObject.GetData("Csv") as string);
+            }
+
+            HideProgressBar();
+        }
+
+        private void saveAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveCurrentGroup();
+        }
+
 
         #endregion
 

@@ -39,8 +39,6 @@ namespace DbChecker
             this.saveAllResultsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.generateInsertToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.generateFromValuesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.wordWrapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.startLabel = new System.Windows.Forms.Label();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.resultsLabel = new System.Windows.Forms.Label();
@@ -73,8 +71,7 @@ namespace DbChecker
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
-            this.dataToolStripMenuItem,
-            this.optionsToolStripMenuItem});
+            this.dataToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Padding = new System.Windows.Forms.Padding(4, 2, 0, 2);
@@ -95,6 +92,7 @@ namespace DbChecker
             this.saveAllToolStripMenuItem.Name = "saveAllToolStripMenuItem";
             this.saveAllToolStripMenuItem.Size = new System.Drawing.Size(115, 22);
             this.saveAllToolStripMenuItem.Text = "&Save All";
+            this.saveAllToolStripMenuItem.Click += new System.EventHandler(this.saveAllToolStripMenuItem_Click);
             // 
             // dataToolStripMenuItem
             // 
@@ -112,39 +110,28 @@ namespace DbChecker
             this.saveResultsToolStripMenuItem.Name = "saveResultsToolStripMenuItem";
             this.saveResultsToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
             this.saveResultsToolStripMenuItem.Text = "Save Selected Result";
+            this.saveResultsToolStripMenuItem.Click += new System.EventHandler(this.saveResultsToolStripMenuItem_Click);
             // 
             // saveAllResultsToolStripMenuItem
             // 
             this.saveAllResultsToolStripMenuItem.Name = "saveAllResultsToolStripMenuItem";
             this.saveAllResultsToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
             this.saveAllResultsToolStripMenuItem.Text = "Save All Results";
+            this.saveAllResultsToolStripMenuItem.Click += new System.EventHandler(this.saveAllResultsToolStripMenuItem_Click);
             // 
             // generateInsertToolStripMenuItem
             // 
             this.generateInsertToolStripMenuItem.Name = "generateInsertToolStripMenuItem";
             this.generateInsertToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
             this.generateInsertToolStripMenuItem.Text = "Generate Insert";
+            this.generateInsertToolStripMenuItem.Click += new System.EventHandler(this.generateInsertToolStripMenuItem_Click);
             // 
             // generateFromValuesToolStripMenuItem
             // 
             this.generateFromValuesToolStripMenuItem.Name = "generateFromValuesToolStripMenuItem";
             this.generateFromValuesToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
             this.generateFromValuesToolStripMenuItem.Text = "Generate From Values";
-            // 
-            // optionsToolStripMenuItem
-            // 
-            this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.wordWrapToolStripMenuItem});
-            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
-            this.optionsToolStripMenuItem.Text = "Options";
-            // 
-            // wordWrapToolStripMenuItem
-            // 
-            this.wordWrapToolStripMenuItem.CheckOnClick = true;
-            this.wordWrapToolStripMenuItem.Name = "wordWrapToolStripMenuItem";
-            this.wordWrapToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
-            this.wordWrapToolStripMenuItem.Text = "Word Wrap";
+            this.generateFromValuesToolStripMenuItem.Click += new System.EventHandler(this.generateFromValuesToolStripMenuItem_Click);
             // 
             // startLabel
             // 
@@ -225,6 +212,7 @@ namespace DbChecker
             this.deleteButton.TabIndex = 19;
             this.deleteButton.Text = "Del";
             this.deleteButton.UseVisualStyleBackColor = true;
+            this.deleteButton.Click += new System.EventHandler(this.deleteButton_Click);
             // 
             // valueTextBox
             // 
@@ -341,9 +329,11 @@ namespace DbChecker
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.menuStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.KeyPreview = true;
             this.Name = "MainWindow";
             this.Text = "MainWindow";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainWindow_FormClosing);
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.MainWindow_KeyUp);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.panel1.ResumeLayout(false);
@@ -367,8 +357,6 @@ namespace DbChecker
         private System.Windows.Forms.ToolStripMenuItem saveAllResultsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem generateInsertToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem generateFromValuesToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem wordWrapToolStripMenuItem;
         private System.Windows.Forms.Label startLabel;
         private System.Windows.Forms.ProgressBar progressBar;
         private System.Windows.Forms.Label resultsLabel;

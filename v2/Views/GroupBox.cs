@@ -24,7 +24,11 @@ namespace DbChecker.Views
 
         private FastColoredTextBox TextBox => _groupTabControl.SelectedTab?.Controls[0] as FastColoredTextBox;
 
-        public string TabText => _groupTabControl.SelectedTab.Text;
+        public string TabText
+        {
+            get => _groupTabControl.SelectedTab.Text;
+            set => _groupTabControl.SelectedTab.Text = value;
+        }
 
         public string Text
         {
@@ -39,6 +43,12 @@ namespace DbChecker.Views
             }
         }
 
+        public bool WordWrap
+        {
+            get => TextBox.WordWrap;
+            set => TextBox.WordWrap = value;
+        }
+
         public string SelectedText => TextBox.SelectedText;
 
         public bool HasSelectedText => TextBox?.SelectedText.Length > 0;
@@ -49,16 +59,26 @@ namespace DbChecker.Views
         public GroupBox()
         {
             _configRepository = new ConfigRepository();
-            //_storageRepository = new SqlRepository();
         }
 
-        //public void SetTextForCurrentTab(string text)
-        //{
-        //    if (Page.Controls[0] is FastColoredTextBox box)
-        //    {
-        //        box.Text = text;
-        //    }
-        //}
+        public void AppendTextToCurrentTab(string text)
+        {
+            if (_groupTabControl.SelectedTab?.Controls.Count > 0 && _groupTabControl.SelectedTab.Controls[0] is FastColoredTextBox box)
+            {
+                box.AppendText($"{Environment.NewLine}");
+                box.AppendText(text);
+            }
+        }
+
+        public void RemoveSelectedTab()
+        {
+            _groupTabControl.TabPages.Remove(_groupTabControl.SelectedTab);
+        }
+
+        public void SetFocus()
+        {
+            TextBox.Focus();
+        }
 
         public TabControl CreateBox(Group group = null)
         {

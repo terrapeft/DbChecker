@@ -64,7 +64,7 @@ namespace DbChecker.Controls
                             grid.RowHeadersVisible = true;
                             grid.SelectAll();
 
-                            objs.Add(new GridViewPage(grid.Text, grid.GetClipboardContent()));
+                            objs.Add(new GridViewPage(page.Text, grid.GetClipboardContent()));
                         }
                     }
                 }

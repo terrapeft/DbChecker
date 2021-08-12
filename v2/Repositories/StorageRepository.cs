@@ -80,12 +80,23 @@ namespace DbChecker.Repositories
             }
         }
 
+        public void SaveOrRenameScript(string groupName, string scriptName, string newScriptName, string script)
+        {
+            var path = EnsureDirectory(groupName);
+            if (File.Exists(Path.Combine(path, $"{scriptName}.sql")))
+            {
+                RenameScript(groupName, scriptName, newScriptName);
+            }
+
+            SaveScript(groupName, newScriptName, script);
+        }
+
         public void RenameScript(string groupName, string scriptName, string newScriptName)
         {
             var path = EnsureDirectory(groupName);
             _fileRepository.RenameFile(
-                Path.Combine(path, scriptName),
-                Path.Combine(path, newScriptName));
+                Path.Combine(path, $"{scriptName}.sql"),
+                Path.Combine(path, $"{newScriptName}.sql"));
         }
 
         public void SaveScript(string groupName, Script script)
@@ -94,15 +105,15 @@ namespace DbChecker.Repositories
             _fileRepository.WriteFile(Path.Combine(path, $"{script.Name}.sql"), script.Text);
         }
 
-        public void DeleteScript(string groupName, Script script)
+        public void DeleteScript(string groupName, string script)
         {
-            var path = Path.Combine(GetGroupPath(groupName), $"{script.Name}.sql");
+            var path = Path.Combine(GetGroupPath(groupName), $"{script}.sql");
             _fileRepository.DeleteFile(path);
         }
 
-        public void DeleteGroup(Group group)
+        public void DeleteGroup(string groupName)
         {
-            _fileRepository.DeleteDirectory(GetGroupPath(group.Name));
+            _fileRepository.DeleteDirectory(GetGroupPath(groupName));
         }
 
         public void CreateOrRenameGroup(string newName, string oldName)
@@ -155,6 +166,11 @@ namespace DbChecker.Repositories
             script.Text = string.Join(Environment.NewLine, content);
         }
 
+        private void SaveScript(string groupName, string scriptName, string script)
+        {
+            var path = EnsureDirectory(groupName);
+            _fileRepository.WriteFile(Path.Combine(path, $"{scriptName}.sql"), script);
+        }
 
         private string EnsureDirectory(string groupName)
         {
@@ -177,8 +193,10 @@ namespace DbChecker.Repositories
         void SaveAll(List<Group> scripts);
         void SaveGroup(Group group);
         void SaveScript(string groupName, Script script);
-        void DeleteScript(string groupName, Script script);
-        void DeleteGroup(Group group);
+        void DeleteScript(string groupName, string script);
+        void DeleteGroup(string groupName);
+        void RenameScript(string groupName, string scriptName, string newScriptName);
+        void SaveOrRenameScript(string groupName, string scriptName, string newScriptName, string script);
 
         void CreateOrRenameGroup(string newName, string oldName = null);
         //int GetScriptNameIndex(string groupName, string scriptName);
