@@ -93,7 +93,7 @@ namespace DbChecker.Repositories
             }
         }
 
-        public int GetLastFileNameIndex(string path)
+        private int GetLastFileNameIndex(string path)
         {
             if (File.Exists(path))
             {
@@ -103,7 +103,7 @@ namespace DbChecker.Repositories
             return -1;
         }
 
-        public int GetNextIndex(string[] names)
+        private int GetNextIndex(string[] names)
         {
             if (!names.Any())
             {
@@ -136,8 +136,8 @@ namespace DbChecker.Repositories
         DirectoryInfo CreateDirectory(string path);
         void DeleteFile(string path);
         void DeleteDirectory(string path);
-        int GetNextIndex(string[] names);
-        int GetLastFileNameIndex(string path);
+        //int GetNextIndex(string[] names);
+        //int GetLastFileNameIndex(string path);
         void RenameDirectory(string oldPath, string newPath);
         void RenameFile(string oldPath, string newPath);
     }

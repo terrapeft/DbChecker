@@ -23,16 +23,19 @@ namespace DbChecker.Repositories
             _fileRepository = new FileRepository();
         }
 
-        public List<Group> GetGroupNamesOrInit()
+        /// <summary>
+        /// Read folders from disk.
+        /// </summary>
+        /// <returns></returns>
+        public List<string> ReadGroupNames()
         {
-            var groupNames = new List<Group>();
+            var groupNames = new List<string>();
 
             var dirs = _fileRepository.FindDirectories(_configRepository.SqlPath);
             foreach (var dir in dirs)
             {
-                groupNames.Add(new Group { Name = dir.Name });
+                groupNames.Add(dir.Name);
             }
-
 
             return groupNames;
         }
@@ -59,12 +62,6 @@ namespace DbChecker.Repositories
             }
 
             return null;
-        }
-
-        private void GetContent(string path, Script script)
-        {
-            var content = _fileRepository.ReadLines(path).ToArray();
-            script.Text = string.Join(Environment.NewLine, content);
         }
 
         public void SaveAll(List<Group> scripts)
@@ -108,32 +105,56 @@ namespace DbChecker.Repositories
             _fileRepository.DeleteDirectory(GetGroupPath(group.Name));
         }
 
-        public string GetIndexedFullFileName(string groupName, string name)
+        public void CreateOrRenameGroup(string newName, string oldName)
         {
-            var path = EnsureDirectory(groupName);
-            var ix = GetScriptNameIndex(groupName, name);
-            return ix > 0 ? Path.Combine(path, $"{name} {ix}.sql") : Path.Combine(path, name);
+            if (oldName == MainWindow.NewGroupName || newName == oldName)
+            {
+                EnsureDirectory(newName);
+            }
+            else
+            {
+                var oldPath = GetGroupPath(oldName);
+
+                if (Directory.Exists(oldPath))
+                {
+                    var newPath = GetGroupPath(newName);
+                    _fileRepository.RenameDirectory(oldPath, newPath);
+                }
+            }
         }
 
-        public string GetIndexedDirectoryName(string groupName, string name)
+        //public string GetIndexedFullFileName(string groupName, string name)
+        //{
+        //    var path = EnsureDirectory(groupName);
+        //    var ix = GetScriptNameIndex(groupName, name);
+        //    return ix > 0 ? Path.Combine(path, $"{name} {ix}.sql") : Path.Combine(path, name);
+        //}
+
+        //public string GetIndexedDirectoryName(string groupName, string name)
+        //{
+        //    var path = EnsureDirectory(groupName);
+        //    var ix = GetGroupNameIndex(groupName);
+        //    return ix > 0 ? Path.Combine(path, $"{name} {ix}") : Path.Combine(path, name);
+        //}
+
+        //public int GetScriptNameIndex(string groupName, string name)
+        //{
+        //    var path = GetGroupPath(groupName);
+        //    var files = Directory.GetFiles(path, $"{name}*");
+        //    return _fileRepository.GetNextIndex(files);
+        //}
+
+        //public int GetGroupNameIndex(string groupName)
+        //{
+        //    var files = Directory.GetDirectories(_configRepository.SqlPath, $"{groupName}*");
+        //    return _fileRepository.GetNextIndex(files);
+        //}
+        private void GetContent(string path, Script script)
         {
-            var path = EnsureDirectory(groupName);
-            var ix = GetGroupNameIndex(groupName);
-            return ix > 0 ? Path.Combine(path, $"{name} {ix}") : Path.Combine(path, name);
+            var content = _fileRepository.ReadLines(path).ToArray();
+            script.Text = string.Join(Environment.NewLine, content);
         }
 
-        public int GetScriptNameIndex(string groupName, string name)
-        {
-            var path = GetGroupPath(groupName);
-            var files = Directory.GetFiles(path, $"{name}*");
-            return _fileRepository.GetNextIndex(files);
-        }
-
-        public int GetGroupNameIndex(string groupName)
-        {
-            var files = Directory.GetDirectories(_configRepository.SqlPath, $"{groupName}*");
-            return _fileRepository.GetNextIndex(files);
-        }
 
         private string EnsureDirectory(string groupName)
         {
@@ -151,17 +172,19 @@ namespace DbChecker.Repositories
 
     public interface IStorageRepository
     {
-        List<Group> GetGroupNamesOrInit();
+        List<string> ReadGroupNames();
         Group ReadGroup(string groupName);
         void SaveAll(List<Group> scripts);
         void SaveGroup(Group group);
         void SaveScript(string groupName, Script script);
         void DeleteScript(string groupName, Script script);
         void DeleteGroup(Group group);
-        int GetScriptNameIndex(string groupName, string scriptName);
-        int GetGroupNameIndex(string groupName);
-        string GetIndexedFullFileName(string groupName, string name);
-        string GetIndexedDirectoryName(string groupName, string name);
+
+        void CreateOrRenameGroup(string newName, string oldName = null);
+        //int GetScriptNameIndex(string groupName, string scriptName);
+        //int GetGroupNameIndex(string groupName);
+        //string GetIndexedFullFileName(string groupName, string name);
+        //string GetIndexedDirectoryName(string groupName, string name);
     }
 
 }

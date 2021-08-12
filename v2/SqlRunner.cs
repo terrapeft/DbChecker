@@ -10,10 +10,10 @@ namespace DbChecker
 {
     public class SqlRunner
     {
-        private readonly Script _script;
+        private readonly string _script;
         private readonly CancellationToken _ctsToken;
 
-        public SqlRunner(Script script, CancellationToken ctsToken)
+        public SqlRunner(string script, CancellationToken ctsToken)
         {
             _script = script;
             _ctsToken = ctsToken;
@@ -29,7 +29,7 @@ namespace DbChecker
                 {
                     using (var connection = new SqlConnection(connStr))
                     {
-                        using (var cmd = new SqlCommand(_script.Text, connection))
+                        using (var cmd = new SqlCommand(_script, connection))
                         {
                             cmd.CommandTimeout = 3600;
                             connection.Open();

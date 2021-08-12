@@ -140,7 +140,7 @@ namespace DbChecker.Views
         /// </summary>
         public Group GetModel()
         {
-            UpdateModel();
+            //UpdateModel();
             return _group;
         }
 

@@ -70,7 +70,7 @@ namespace DbChecker
             ShowProgressBar();
 
             AddConnectionStrings();
-            _groups = _sqlRepository.GetGroupNamesOrInit();
+            ////_groups = _sqlRepository.ReadGroupNames();
             groupsControl.Bind(_groups);
             groupsControl.SelectItem(_configRepository.SelectedGroup);
 

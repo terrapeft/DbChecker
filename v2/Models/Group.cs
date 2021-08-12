@@ -15,6 +15,11 @@ namespace DbChecker.Models
 
     public class Group : IGroup
     {
+        public Group(string name) : this()
+        {
+            Name = name;
+        }
+
         public Group()
         {
             Guid = Guid.NewGuid();

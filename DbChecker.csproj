@@ -71,12 +71,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="v2\AppForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="v2\AppForm.Designer.cs">
-      <DependentUpon>AppForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="CsvFileReader.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
@@ -111,6 +105,12 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="v2\ItemType.cs" />
+    <Compile Include="v2\MainWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="v2\MainWindow.Designer.cs">
+      <DependentUpon>MainWindow.cs</DependentUpon>
+    </Compile>
     <Compile Include="v2\Models\EditableItem.cs" />
     <Compile Include="v2\Models\ScriptResult.cs" />
     <Compile Include="v2\Repositories\ConfigRepository.cs" />
@@ -122,10 +122,7 @@
     <Compile Include="v2\Repositories\FileRepository.cs" />
     <Compile Include="v2\SqlRunner.cs" />
     <Compile Include="v2\StringBuilderHelper.cs" />
-    <Compile Include="v2\Views\QueryBox.cs" />
-    <EmbeddedResource Include="v2\AppForm.resx">
-      <DependentUpon>AppForm.cs</DependentUpon>
-    </EmbeddedResource>
+    <Compile Include="v2\Views\GroupBox.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
@@ -147,6 +144,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="v2\Controls\ResultsBox.resx">
       <DependentUpon>ResultsBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="v2\MainWindow.resx">
+      <DependentUpon>MainWindow.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -171,6 +171,7 @@
     <Content Include="connections.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Resources\unnamed.jpg" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -16,7 +16,7 @@ namespace DbChecker
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new AppForm());
+            Application.Run(new MainWindow());
         }
     }
 }

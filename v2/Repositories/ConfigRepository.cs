@@ -75,6 +75,13 @@ namespace DbChecker.Repositories
             var doc = XDocument.Load("connections.config");
             var connStrs = doc.XPathSelectElement("//connectionStrings");
             var connStr = doc.XPathSelectElement($"//connectionStrings/add[@name='{name}']");
+
+            if (connStr == null && ConnectionStrings.Any(s => s.Name == name))
+            {
+                // skip values from machine.config
+                return;
+            }
+
             if (connStr == null)
             {
                 connStr = new XElement("add",

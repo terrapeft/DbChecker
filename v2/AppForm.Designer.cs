@@ -36,9 +36,12 @@ namespace DbChecker
             this.queryAndResultsSplitContainer = new System.Windows.Forms.SplitContainer();
             this.groupsTabControl = new System.Windows.Forms.TabControl();
             this.addNewTabPage = new System.Windows.Forms.TabPage();
+            this.resultsBox = new DbChecker.Controls.ResultsBox();
             this.resultsGridContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.itemEditor = new DbChecker.Controls.ItemEditor();
+            this.groupsControl = new DbChecker.Controls.GroupControl();
             this.connStrComboBox = new System.Windows.Forms.ComboBox();
             this.runButton = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
@@ -57,9 +60,6 @@ namespace DbChecker
             this.resultsLabel = new System.Windows.Forms.Label();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.startLabel = new System.Windows.Forms.Label();
-            this.resultsBox = new DbChecker.Controls.ResultsBox();
-            this.itemEditor = new DbChecker.Controls.ItemEditor();
-            this.groupsControl = new DbChecker.Controls.GroupControl();
             ((System.ComponentModel.ISupportInitialize)(this.queryAndResultsSplitContainer)).BeginInit();
             this.queryAndResultsSplitContainer.Panel1.SuspendLayout();
             this.queryAndResultsSplitContainer.Panel2.SuspendLayout();
@@ -111,6 +111,16 @@ namespace DbChecker
             this.addNewTabPage.Text = "+";
             this.addNewTabPage.UseVisualStyleBackColor = true;
             // 
+            // resultsBox
+            // 
+            this.resultsBox.ContextMenuStrip = this.resultsGridContextMenuStrip;
+            this.resultsBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.resultsBox.Location = new System.Drawing.Point(0, 0);
+            this.resultsBox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.resultsBox.Name = "resultsBox";
+            this.resultsBox.Size = new System.Drawing.Size(880, 231);
+            this.resultsBox.TabIndex = 0;
+            // 
             // resultsGridContextMenuStrip
             // 
             this.resultsGridContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -136,6 +146,31 @@ namespace DbChecker
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(880, 54);
             this.panel1.TabIndex = 2;
+            // 
+            // itemEditor
+            // 
+            this.itemEditor.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            editableItem1.Id = null;
+            editableItem1.ItemType = DbChecker.ItemType.ConnectionString;
+            editableItem1.Value = "";
+            this.itemEditor.Item = editableItem1;
+            this.itemEditor.Location = new System.Drawing.Point(3, 31);
+            this.itemEditor.Margin = new System.Windows.Forms.Padding(2);
+            this.itemEditor.Name = "itemEditor";
+            this.itemEditor.Size = new System.Drawing.Size(791, 20);
+            this.itemEditor.TabIndex = 8;
+            this.itemEditor.DeletingItem += new System.EventHandler<DbChecker.Models.EditableItem>(this.itemEditor_OnDelete);
+            this.itemEditor.SavingItem += new System.EventHandler<DbChecker.Models.EditableItem>(this.itemEditor_OnSave);
+            // 
+            // groupsControl
+            // 
+            this.groupsControl.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupsControl.Location = new System.Drawing.Point(544, 6);
+            this.groupsControl.Margin = new System.Windows.Forms.Padding(2);
+            this.groupsControl.Name = "groupsControl";
+            this.groupsControl.Size = new System.Drawing.Size(332, 21);
+            this.groupsControl.TabIndex = 2;
             // 
             // connStrComboBox
             // 
@@ -292,41 +327,6 @@ namespace DbChecker
             this.startLabel.Size = new System.Drawing.Size(53, 13);
             this.startLabel.TabIndex = 6;
             this.startLabel.Text = "startLabel";
-            // 
-            // resultsBox
-            // 
-            this.resultsBox.ContextMenuStrip = this.resultsGridContextMenuStrip;
-            this.resultsBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.resultsBox.Location = new System.Drawing.Point(0, 0);
-            this.resultsBox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.resultsBox.Name = "resultsBox";
-            this.resultsBox.Size = new System.Drawing.Size(880, 231);
-            this.resultsBox.TabIndex = 0;
-            // 
-            // itemEditor
-            // 
-            this.itemEditor.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            editableItem1.Id = null;
-            editableItem1.ItemType = DbChecker.ItemType.ConnectionString;
-            editableItem1.Value = "";
-            this.itemEditor.Item = editableItem1;
-            this.itemEditor.Location = new System.Drawing.Point(3, 31);
-            this.itemEditor.Margin = new System.Windows.Forms.Padding(2);
-            this.itemEditor.Name = "itemEditor";
-            this.itemEditor.Size = new System.Drawing.Size(791, 20);
-            this.itemEditor.TabIndex = 8;
-            this.itemEditor.DeletingItem += new System.EventHandler<DbChecker.Models.EditableItem>(this.itemEditor_OnDelete);
-            this.itemEditor.SavingItem += new System.EventHandler<DbChecker.Models.EditableItem>(this.itemEditor_OnSave);
-            // 
-            // groupsControl
-            // 
-            this.groupsControl.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupsControl.Location = new System.Drawing.Point(544, 6);
-            this.groupsControl.Margin = new System.Windows.Forms.Padding(2);
-            this.groupsControl.Name = "groupsControl";
-            this.groupsControl.Size = new System.Drawing.Size(332, 21);
-            this.groupsControl.TabIndex = 2;
             // 
             // AppForm
             // 
