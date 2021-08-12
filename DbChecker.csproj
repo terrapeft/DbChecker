@@ -72,60 +72,43 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CsvFileReader.cs" />
-    <Compile Include="Form1.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
-    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StorageTemplate.cs" />
     <Compile Include="SqlGenerator.cs" />
-    <Compile Include="v2\Controls\GridViewPage.cs" />
-    <Compile Include="v2\Controls\GroupsControl.cs">
+    <Compile Include="Controls\GridViewPage.cs" />
+    <Compile Include="Controls\GroupsControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="v2\Controls\GroupsControl.Designer.cs">
+    <Compile Include="Controls\GroupsControl.Designer.cs">
       <DependentUpon>GroupsControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="v2\Controls\ItemEditor.cs">
+    <Compile Include="Controls\ResultsBox.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="v2\Controls\ItemEditor.Designer.cs">
-      <DependentUpon>ItemEditor.cs</DependentUpon>
-    </Compile>
-    <Compile Include="v2\Controls\ResultsBox.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="v2\Controls\ResultsBox.Designer.cs">
+    <Compile Include="Controls\ResultsBox.Designer.cs">
       <DependentUpon>ResultsBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="v2\Controls\ExtendedTabControl.cs">
+    <Compile Include="Controls\ExtendedTabControl.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="v2\ItemType.cs" />
-    <Compile Include="v2\MainWindow.cs">
+    <Compile Include="ItemType.cs" />
+    <Compile Include="MainWindow.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="v2\MainWindow.Designer.cs">
+    <Compile Include="MainWindow.Designer.cs">
       <DependentUpon>MainWindow.cs</DependentUpon>
     </Compile>
-    <Compile Include="v2\Models\EditableItem.cs" />
-    <Compile Include="v2\Models\ScriptResult.cs" />
-    <Compile Include="v2\Repositories\ConfigRepository.cs" />
-    <Compile Include="v2\Global.cs" />
-    <Compile Include="v2\Models\Group.cs" />
-    <Compile Include="v2\Repositories\CsvRepository.cs" />
-    <Compile Include="v2\Repositories\StorageRepository.cs" />
-    <Compile Include="v2\Models\Script.cs" />
-    <Compile Include="v2\Repositories\FileRepository.cs" />
-    <Compile Include="v2\SqlRunner.cs" />
-    <Compile Include="v2\StringBuilderHelper.cs" />
-    <Compile Include="v2\Views\GroupBox.cs" />
-    <EmbeddedResource Include="Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
-    </EmbeddedResource>
+    <Compile Include="Models\ScriptResult.cs" />
+    <Compile Include="Repositories\ConfigRepository.cs" />
+    <Compile Include="Global.cs" />
+    <Compile Include="Models\Group.cs" />
+    <Compile Include="Repositories\CsvRepository.cs" />
+    <Compile Include="Repositories\StorageRepository.cs" />
+    <Compile Include="Models\Script.cs" />
+    <Compile Include="Repositories\FileRepository.cs" />
+    <Compile Include="SqlRunner.cs" />
+    <Compile Include="StringBuilderHelper.cs" />
+    <Compile Include="Views\GroupBox.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -136,16 +119,13 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="v2\Controls\GroupsControl.resx">
+    <EmbeddedResource Include="Controls\GroupsControl.resx">
       <DependentUpon>GroupsControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="v2\Controls\ItemEditor.resx">
-      <DependentUpon>ItemEditor.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="v2\Controls\ResultsBox.resx">
+    <EmbeddedResource Include="Controls\ResultsBox.resx">
       <DependentUpon>ResultsBox.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="v2\MainWindow.resx">
+    <EmbeddedResource Include="MainWindow.resx">
       <DependentUpon>MainWindow.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="packages.config" />
@@ -163,17 +143,13 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="db.ico">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="connections.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Include="Resources\unnamed.jpg" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Resources\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>rmdir "c:\work\DbChecker" /S /Q
