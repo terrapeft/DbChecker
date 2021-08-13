@@ -68,7 +68,12 @@ namespace DbChecker
 
             AddConnectionStrings();
             AddGroupNames(_storageRepository.ReadGroupNames());
+
             SelectGroupName(_configRepository.SelectedGroup);
+            if (string.IsNullOrEmpty(SelectedGroupName))
+            {
+                LoadTabs();
+            }
         }
 
         #region Private methods
@@ -107,8 +112,11 @@ namespace DbChecker
 
         private void SaveCurrentGroup()
         {
-            var group = _currentGroupBox.GetModel(SelectedGroupName);
-            _storageRepository.SaveGroup(group);
+            if (_currentGroupBox != null)
+            {
+                var group = _currentGroupBox.GetModel(SelectedGroupName);
+                _storageRepository.SaveGroup(group);
+            }
         }
 
         #endregion
@@ -312,7 +320,7 @@ namespace DbChecker
 
             SaveLastUsedGroupAndScript();
 
-            if (ModifierKeys != Keys.Control)
+            if (ModifierKeys == Keys.Control)
             {
                 SaveCurrentGroup();
             }

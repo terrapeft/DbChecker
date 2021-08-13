@@ -22,7 +22,18 @@ namespace DbChecker.Views
         private readonly IConfigRepository _configRepository;
         private TabControl _groupTabControl;
 
-        private FastColoredTextBox TextBox => _groupTabControl.SelectedTab?.Controls[0] as FastColoredTextBox;
+        private FastColoredTextBox TextBox {
+            get
+            {
+                if (_groupTabControl.SelectedTab?.Controls.Count > 0 &&
+                    _groupTabControl.SelectedTab?.Controls[0] is FastColoredTextBox t)
+                {
+                    return t;
+                }
+
+                return null;
+            }
+        }
 
         public string TabText
         {
@@ -49,7 +60,7 @@ namespace DbChecker.Views
             set => TextBox.WordWrap = value;
         }
 
-        public string SelectedText => TextBox.SelectedText;
+        public string SelectedText => TextBox?.SelectedText;
 
         public bool HasSelectedText => TextBox?.SelectedText.Length > 0;
 
@@ -77,7 +88,7 @@ namespace DbChecker.Views
 
         public void SetFocus()
         {
-            TextBox.Focus();
+            TextBox?.Focus();
         }
 
         public TabControl CreateBox(Group group = null)
