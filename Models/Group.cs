@@ -10,23 +10,19 @@ namespace DbChecker.Models
     {
         string Name { get; set; }
         List<Script> Scripts { get; set; }
-        Guid Guid { get; set; }
     }
 
     public class Group : IGroup
     {
-        public Group(string name) : this()
+        public Group()
+        {}
+
+        public Group(string name)
         {
             Name = name;
         }
 
-        public Group()
-        {
-            Guid = Guid.NewGuid();
-        }
-
         public string Name { get; set; }
         public List<Script> Scripts { get; set; } = new List<Script>();
-        public Guid Guid { get; set; }
     }
 }

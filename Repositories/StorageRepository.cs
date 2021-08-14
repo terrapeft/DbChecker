@@ -46,18 +46,7 @@ namespace DbChecker.Repositories
 
             if (Directory.Exists(path))
             {
-                var files = _fileRepository.FindFiles(path, "*.sql");
-                var group = new Group {Name = groupName};
-
-                foreach (var file in files)
-                {
-                    var script = new Script {Name = Path.GetFileNameWithoutExtension(file.FullName)};
-                    var filePath = Path.Combine(path, file.Name);
-                    GetContent(filePath, script);
-
-                    group.Scripts.Add(script);
-                }
-
+                var group = ReadOrCreateGroupWithMeta(path, groupName);
                 return group;
             }
 
@@ -134,32 +123,46 @@ namespace DbChecker.Repositories
             }
         }
 
-        //public string GetIndexedFullFileName(string groupName, string name)
-        //{
-        //    var path = EnsureDirectory(groupName);
-        //    var ix = GetScriptNameIndex(groupName, name);
-        //    return ix > 0 ? Path.Combine(path, $"{name} {ix}.sql") : Path.Combine(path, name);
-        //}
+        private Group ReadOrCreateGroupWithMeta(string path, string groupName)
+        {
+            var jsonFile = Path.Combine(path, _configRepository.MetaFilePath);
+            var newGroup = false;
+            Group group = null;
 
-        //public string GetIndexedDirectoryName(string groupName, string name)
-        //{
-        //    var path = EnsureDirectory(groupName);
-        //    var ix = GetGroupNameIndex(groupName);
-        //    return ix > 0 ? Path.Combine(path, $"{name} {ix}") : Path.Combine(path, name);
-        //}
+            if (!File.Exists(jsonFile))
+            {
+                group = new Group { Name = groupName };
+                newGroup = true;
+            }
+            else
+            {
+                var json = _fileRepository.ReadFile(jsonFile);
+                group = JsonConvert.DeserializeObject<Group>(json);
+            }
 
-        //public int GetScriptNameIndex(string groupName, string name)
-        //{
-        //    var path = GetGroupPath(groupName);
-        //    var files = Directory.GetFiles(path, $"{name}*");
-        //    return _fileRepository.GetNextIndex(files);
-        //}
+            var fileNames = _fileRepository.FindFiles(path, "*.sql")
+                .OrderBy(f => f.CreationTime)
+                .Select(f => f.Name)
+                .ToList();
 
-        //public int GetGroupNameIndex(string groupName)
-        //{
-        //    var files = Directory.GetDirectories(_configRepository.SqlPath, $"{groupName}*");
-        //    return _fileRepository.GetNextIndex(files);
-        //}
+            var missingFiles = fileNames
+                .Except(group.Scripts.Select(s => s.Name))
+                .ToList();
+
+            if (newGroup || missingFiles.Any())
+            {
+                foreach (var file in missingFiles)
+                {
+                    group.Scripts.Add(new Script { Name = Path.GetFileNameWithoutExtension(file) });
+                }
+
+                _fileRepository.WriteFile(jsonFile, JsonConvert.SerializeObject(group));
+            }
+
+            return group;
+        }
+
+
         private void GetContent(string path, Script script)
         {
             var content = _fileRepository.ReadLines(path).ToArray();
@@ -197,12 +200,6 @@ namespace DbChecker.Repositories
         void DeleteGroup(string groupName);
         void RenameScript(string groupName, string scriptName, string newScriptName);
         void SaveOrRenameScript(string groupName, string scriptName, string newScriptName, string script);
-
         void CreateOrRenameGroup(string newName, string oldName = null);
-        //int GetScriptNameIndex(string groupName, string scriptName);
-        //int GetGroupNameIndex(string groupName);
-        //string GetIndexedFullFileName(string groupName, string name);
-        //string GetIndexedDirectoryName(string groupName, string name);
     }
-
 }
