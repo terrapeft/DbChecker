@@ -200,6 +200,17 @@ namespace DbChecker
             queryAndResultsSplitContainer.Panel1.Controls.Add(_currentGroupBox.CreateBox(group));
         }
 
+        private void GroupBoxOnDeletingScript(object sender, string e)
+        {
+            _storageRepository.DeleteScript(SelectedGroupName, e);
+            _currentGroupBox.RemoveSelectedTab();
+        }
+
+        private void GroupBoxOnRenamingScript(object sender, string e)
+        {
+            StartRenaming(e, ItemType.Script);
+        }
+
         private void GroupBoxOnSelectingTab(object sender, string e)
         {
             if (!string.IsNullOrWhiteSpace(e))
@@ -225,17 +236,6 @@ namespace DbChecker
         #endregion
 
         #region Event handlers
-
-        private void GroupBoxOnDeletingScript(object sender, string e)
-        {
-            _storageRepository.DeleteScript(SelectedGroupName, e);
-            _currentGroupBox.RemoveSelectedTab();
-        }
-
-        private void GroupBoxOnRenamingScript(object sender, string e)
-        {
-            StartRenaming(e, ItemType.Script);
-        }
 
         private void connStrComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -282,6 +282,8 @@ namespace DbChecker
                 case ItemType.ConnectionString:
                     var newName = SelectedConnectionStringName;
                     _configRepository.SaveConnectionString(newName, SelectedValue);
+                    //TODO
+                    //UpdateNameInMeta();
                     AddConnectionStrings();
                     SelectConnectionString(newName); // works for a new item
                     _currentGroupBox.SetFocus();

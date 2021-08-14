@@ -81,8 +81,12 @@ namespace DbChecker.Controls
         {
             if (_groupTabControl.SelectedTab?.Controls.Count > 0 && _groupTabControl.SelectedTab.Controls[0] is FastColoredTextBox box)
             {
-                box.AppendText(Environment.NewLine);
-                box.AppendText(Environment.NewLine);
+                if (box.Text.Trim().Length > 0)
+                {
+                    box.AppendText(Environment.NewLine);
+                    box.AppendText(Environment.NewLine);
+                }
+
                 box.AppendText(text);
             }
         }
@@ -158,7 +162,7 @@ namespace DbChecker.Controls
 
         private void GroupTabControlOnSelectedIndexChanged(object sender, EventArgs e)
         {
-            SelectingTab?.Invoke(this, SelectedScript.ConnectionString);
+            SelectingTab?.Invoke(this, SelectedScript?.ConnectionString);
         }
 
         public Group GetModel(string groupName)
