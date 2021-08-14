@@ -10,8 +10,7 @@ using System.Windows.Forms;
 using DbChecker.Controls;
 using DbChecker.Models;
 using DbChecker.Repositories;
-using DbChecker.Views;
-using GroupBox = DbChecker.Views.GroupBox;
+using GroupBox = DbChecker.Controls.GroupBox;
 
 namespace DbChecker
 {
@@ -28,7 +27,6 @@ namespace DbChecker
         private DateTime _prevClick;
         private GroupBox _currentGroupBox;
         private CancellationTokenSource cts;
-        //private List<Group> _groups;
 
         public string SelectedConnectionString
         {
@@ -49,7 +47,9 @@ namespace DbChecker
             set => valueTextBox.Text = value;
         }
 
-        public string SelectedScriptSource => _currentGroupBox.Text;
+        public string SelectedScriptSource => _currentGroupBox?.Text;
+
+        public Script SelectedScript => _currentGroupBox?.SelectedScript;
 
 
         public MainWindow()
@@ -68,8 +68,11 @@ namespace DbChecker
 
             AddConnectionStrings();
             AddGroupNames(_storageRepository.ReadGroupNames());
+            AddSnippets();
 
+            // this will trigger the SelectedIndexChanged event with binding
             SelectGroupName(_configRepository.SelectedGroup);
+
             if (string.IsNullOrEmpty(SelectedGroupName))
             {
                 LoadTabs();
@@ -79,6 +82,24 @@ namespace DbChecker
         #region Private methods
 
         #region Common
+
+        private void AddSnippets()
+        {
+            snippetsToolStripMenuItem.DropDownItems.Clear();
+
+            foreach (var snippet in _configRepository.Snippets)
+            {
+                var item = new ToolStripMenuItem();
+
+                item.Text = snippet.Name;
+                item.Click += (sender, args) =>
+                {
+                    _currentGroupBox.AppendTextToCurrentTab(snippet.Text);
+                };
+
+                snippetsToolStripMenuItem.DropDownItems.Add(item);
+            }
+        }
 
         private void StartRenaming(string text, ItemType type)
         {
@@ -141,6 +162,11 @@ namespace DbChecker
             }
         }
 
+        private void SelectConnectionString(string name)
+        {
+            connStrComboBox.SelectedIndex = connStrComboBox.FindStringExact(name);
+        }
+
         private bool HasSelectedGroup()
         {
             return groupNamesComboBox.SelectedIndex != -1 && SelectedGroupName != NewGroupName;
@@ -168,9 +194,18 @@ namespace DbChecker
             _currentGroupBox = new GroupBox();
             _currentGroupBox.RenamingScript += GroupBoxOnRenamingScript;
             _currentGroupBox.DeletingScript += GroupBoxOnDeletingScript;
+            _currentGroupBox.SelectingTab += GroupBoxOnSelectingTab;
 
             queryAndResultsSplitContainer.Panel1.Controls.Clear();
             queryAndResultsSplitContainer.Panel1.Controls.Add(_currentGroupBox.CreateBox(group));
+        }
+
+        private void GroupBoxOnSelectingTab(object sender, string e)
+        {
+            if (!string.IsNullOrWhiteSpace(e))
+            {
+                SelectConnectionString(e);
+            }
         }
 
         #endregion
@@ -185,18 +220,6 @@ namespace DbChecker
             connStrComboBox.Items.AddRange(_configRepository.ConnectionStrings);
             connStrComboBox.DisplayMember = "Name";
             connStrComboBox.Focus();
-
-            if (connStrComboBox.Items.Count > 0)
-            {
-                connStrComboBox.SelectedIndex = !string.IsNullOrEmpty(_configRepository.SelectedConnectionString)
-                    ? connStrComboBox.FindStringExact(_configRepository.SelectedConnectionString)
-                    : 0;
-            }
-        }
-
-        private void SelectConnectionString(string name)
-        {
-            connStrComboBox.SelectedIndex = connStrComboBox.FindStringExact(name);
         }
 
         #endregion
@@ -228,6 +251,7 @@ namespace DbChecker
             else
             {
                 LoadTabs(_storageRepository.ReadGroup(SelectedGroupName));
+                SelectConnectionString(SelectedScript?.ConnectionString);
             }
         }
 
@@ -313,11 +337,6 @@ namespace DbChecker
 
         private void MainWindow_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (!string.IsNullOrEmpty(SelectedConnectionStringName))
-            {
-                _configRepository.SelectedConnectionString = SelectedConnectionStringName;
-            }
-
             SaveLastUsedGroupAndScript();
 
             if (ModifierKeys == Keys.Control)
@@ -381,6 +400,8 @@ namespace DbChecker
             }
 
             startLabel.Text = $"Elapsed time: {(DateTime.Now - startedAt):g}";
+            SelectedScript.ConnectionString = SelectedConnectionStringName;
+            _storageRepository.UpdateMetadata(SelectedGroupName, SelectedScript);
         }
 
         private void MainWindow_KeyUp(object sender, KeyEventArgs e)

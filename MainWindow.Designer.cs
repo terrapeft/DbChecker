@@ -55,8 +55,9 @@ namespace DbChecker
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.queryAndResultsSplitContainer = new System.Windows.Forms.SplitContainer();
-            this.messageLabel = new System.Windows.Forms.Label();
             this.resultsBox = new DbChecker.Controls.ResultsBox();
+            this.messageLabel = new System.Windows.Forms.Label();
+            this.snippetsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
             this.resultsGridContextMenuStrip.SuspendLayout();
@@ -71,7 +72,8 @@ namespace DbChecker
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
-            this.dataToolStripMenuItem});
+            this.dataToolStripMenuItem,
+            this.snippetsToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Padding = new System.Windows.Forms.Padding(4, 2, 0, 2);
@@ -295,6 +297,16 @@ namespace DbChecker
             this.queryAndResultsSplitContainer.SplitterDistance = 277;
             this.queryAndResultsSplitContainer.TabIndex = 14;
             // 
+            // resultsBox
+            // 
+            this.resultsBox.ContextMenuStrip = this.resultsGridContextMenuStrip;
+            this.resultsBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.resultsBox.Location = new System.Drawing.Point(0, 0);
+            this.resultsBox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.resultsBox.Name = "resultsBox";
+            this.resultsBox.Size = new System.Drawing.Size(1034, 315);
+            this.resultsBox.TabIndex = 1;
+            // 
             // messageLabel
             // 
             this.messageLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
@@ -305,15 +317,11 @@ namespace DbChecker
             this.messageLabel.TabIndex = 15;
             this.messageLabel.Text = "messageLabel";
             // 
-            // resultsBox
+            // snippetsToolStripMenuItem
             // 
-            this.resultsBox.ContextMenuStrip = this.resultsGridContextMenuStrip;
-            this.resultsBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.resultsBox.Location = new System.Drawing.Point(0, 0);
-            this.resultsBox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.resultsBox.Name = "resultsBox";
-            this.resultsBox.Size = new System.Drawing.Size(1034, 315);
-            this.resultsBox.TabIndex = 1;
+            this.snippetsToolStripMenuItem.Name = "snippetsToolStripMenuItem";
+            this.snippetsToolStripMenuItem.Size = new System.Drawing.Size(64, 20);
+            this.snippetsToolStripMenuItem.Text = "Snippets";
             // 
             // MainWindow
             // 
@@ -375,5 +383,6 @@ namespace DbChecker
         private System.Windows.Forms.SplitContainer queryAndResultsSplitContainer;
         private System.Windows.Forms.Label messageLabel;
         private Controls.ResultsBox resultsBox;
+        private System.Windows.Forms.ToolStripMenuItem snippetsToolStripMenuItem;
     }
 }

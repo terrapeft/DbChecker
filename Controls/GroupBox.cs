@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
@@ -9,7 +8,7 @@ using DbChecker.Repositories;
 using FastColoredTextBoxNS;
 using Group = DbChecker.Models.Group;
 
-namespace DbChecker.Views
+namespace DbChecker.Controls
 {
     public class GroupBox
     {
@@ -41,6 +40,11 @@ namespace DbChecker.Views
             set => _groupTabControl.SelectedTab.Text = value;
         }
 
+        public Script SelectedScript
+        {
+            get => _groupTabControl.SelectedTab?.Tag as Script;
+        }
+
         public string Text
         {
             get
@@ -66,6 +70,7 @@ namespace DbChecker.Views
 
         public event EventHandler<string> RenamingScript;
         public event EventHandler<string> DeletingScript;
+        public event EventHandler<string> SelectingTab;
 
         public GroupBox()
         {
@@ -76,7 +81,8 @@ namespace DbChecker.Views
         {
             if (_groupTabControl.SelectedTab?.Controls.Count > 0 && _groupTabControl.SelectedTab.Controls[0] is FastColoredTextBox box)
             {
-                box.AppendText($"{Environment.NewLine}");
+                box.AppendText(Environment.NewLine);
+                box.AppendText(Environment.NewLine);
                 box.AppendText(text);
             }
         }
@@ -126,12 +132,13 @@ namespace DbChecker.Views
                 };
 
                 _groupTabControl.MouseDoubleClick += GroupTabControlOnMouseDoubleClick;
+                _groupTabControl.SelectedIndexChanged += GroupTabControlOnSelectedIndexChanged;
 
                 if (group != null)
                 {
                     foreach (var script in group.Scripts)
                     {
-                        _groupTabControl.Controls.Add(CreateTabPage(_groupTabControl, script.Name, script.Text));
+                        _groupTabControl.Controls.Add(CreateTabPage(_groupTabControl, script));
                     }
                 }
 
@@ -149,6 +156,11 @@ namespace DbChecker.Views
             }
         }
 
+        private void GroupTabControlOnSelectedIndexChanged(object sender, EventArgs e)
+        {
+            SelectingTab?.Invoke(this, SelectedScript.ConnectionString);
+        }
+
         public Group GetModel(string groupName)
         {
             var group = new Group(groupName);
@@ -157,9 +169,8 @@ namespace DbChecker.Views
             {
                 if (page.Text != PlusTabPageName)
                 {
-                    var textBox = page.Controls[0] as FastColoredTextBox;
-                    var script = new Script();
-                    script.Text = textBox.Text;
+                    var script = page.Tag is Script t ? t : new Script();
+                    script.Text = TextBox.Text;
                     script.Name = page.Text;
                     group.Scripts.Add(script);
                 }
@@ -184,21 +195,22 @@ namespace DbChecker.Views
             }
         }
 
-        private TabPage CreateTabPage(TabControl tabControl, string name = null, string text = null)
+        private TabPage CreateTabPage(TabControl tabControl, Script script = null)
         {
             var tabPage = new TabPage();
             var menuItem = new MenuItem("Delete Tab");
 
             menuItem.Click += (sender, args) =>
             {
-                DeletingScript?.Invoke(this, name);
+                DeletingScript?.Invoke(this, script?.Name);
             };
 
+            tabPage.Tag = script;
             tabPage.Name = "tabPage" + ++_tabPageCount;
             tabPage.TabIndex = _tabPageCount;
-            tabPage.Text = (name ?? $"{TabName} {GetNextIndex(GetTabNames(), TabName)}").Trim();
+            tabPage.Text = (script?.Name ?? $"{TabName} {GetNextIndex(GetTabNames(), TabName)}").Trim();
             tabPage.ContextMenu = new ContextMenu(new[] { menuItem } );
-            tabPage.Controls.Add(CreateTextBox(text));
+            tabPage.Controls.Add(CreateTextBox(script?.Text));
 
             return tabPage;
         }

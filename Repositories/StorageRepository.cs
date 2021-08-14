@@ -47,7 +47,7 @@ namespace DbChecker.Repositories
 
             if (Directory.Exists(path))
             {
-                var group = ReadOrCreateGroupWithMeta(path, groupName);
+                var group = ReadOrCreateGroupWithMeta(groupName);
                 return group;
             }
 
@@ -92,6 +92,8 @@ namespace DbChecker.Repositories
         public void SaveScript(string groupName, Script script)
         {
             var path = EnsureDirectory(groupName);
+
+            UpdateMetadata(groupName, script);
             _fileRepository.WriteFile(Path.Combine(path, $"{script.Name}.sql"), script.Text);
         }
 
@@ -124,8 +126,19 @@ namespace DbChecker.Repositories
             }
         }
 
-        private Group ReadOrCreateGroupWithMeta(string path, string groupName)
+        public void UpdateMetadata(string groupName, Script script)
         {
+            var path = GetGroupPath(groupName);
+            var jsonFile = Path.Combine(path, _configRepository.MetaFilePath);
+            var currentMeta = ReadMetadata(jsonFile);
+            var scriptMeta = currentMeta.Scripts.Single(s => s.Name.Equals(script.Name));
+            scriptMeta.ConnectionString = script.ConnectionString;
+            _fileRepository.WriteFile(jsonFile, JsonConvert.SerializeObject(currentMeta));
+        }
+
+        private Group ReadOrCreateGroupWithMeta(string groupName)
+        {
+            var path = GetGroupPath(groupName);
             var jsonFile = Path.Combine(path, _configRepository.MetaFilePath);
             var newGroup = false;
             Group group = null;
@@ -137,8 +150,7 @@ namespace DbChecker.Repositories
             }
             else
             {
-                var json = _fileRepository.ReadFile(jsonFile);
-                group = JsonConvert.DeserializeObject<Group>(json);
+                group = ReadMetadata(jsonFile);
             }
 
             var fileNames = _fileRepository.FindFiles(path, "*.sql")
@@ -169,6 +181,11 @@ namespace DbChecker.Repositories
             return group;
         }
 
+        private Group ReadMetadata(string jsonFile)
+        {
+            var json = _fileRepository.ReadFile(jsonFile);
+            return JsonConvert.DeserializeObject<Group>(json);
+        }
 
         private void GetContent(string path, Script script)
         {
@@ -205,6 +222,7 @@ namespace DbChecker.Repositories
         void SaveScript(string groupName, Script script);
         void DeleteScript(string groupName, string script);
         void DeleteGroup(string groupName);
+        void UpdateMetadata(string groupName, Script script);
         void RenameScript(string groupName, string scriptName, string newScriptName);
         void SaveOrRenameScript(string groupName, string scriptName, string newScriptName, string script);
         void CreateOrRenameGroup(string newName, string oldName = null);
