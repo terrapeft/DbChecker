@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using DbChecker.Controls;
 using DbChecker.Models;
 using Newtonsoft.Json;
@@ -142,7 +143,7 @@ namespace DbChecker.Repositories
 
             var fileNames = _fileRepository.FindFiles(path, "*.sql")
                 .OrderBy(f => f.CreationTime)
-                .Select(f => f.Name)
+                .Select(f => Path.GetFileNameWithoutExtension(f.Name))
                 .ToList();
 
             var missingFiles = fileNames
@@ -157,6 +158,12 @@ namespace DbChecker.Repositories
                 }
 
                 _fileRepository.WriteFile(jsonFile, JsonConvert.SerializeObject(group));
+            }
+
+            foreach (var script in group.Scripts)
+            {
+                var filePath = Path.Combine(path, $"{script.Name}.sql");
+                GetContent(filePath, script);
             }
 
             return group;
