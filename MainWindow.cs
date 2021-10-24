@@ -17,6 +17,7 @@ namespace DbChecker
     public partial class MainWindow : Form
     {
         public const string NewGroupName = "<Add new group>";
+        public const string NewConnectionString = "<Add new connection>";
 
         private readonly IStorageRepository _storageRepository;
         private readonly IConfigRepository _configRepository;
@@ -227,7 +228,7 @@ namespace DbChecker
         {
             connStrComboBox.Items.Clear();
             connStrComboBox.Text = string.Empty;
-
+            connStrComboBox.Items.Add(new ConnectionStringSettings(NewConnectionString, null));
             connStrComboBox.Items.AddRange(_configRepository.ConnectionStrings);
             connStrComboBox.DisplayMember = "Name";
             connStrComboBox.Focus();
@@ -281,9 +282,12 @@ namespace DbChecker
             {
                 case ItemType.ConnectionString:
                     var newName = SelectedConnectionStringName;
+
+                    //if (_currentItemOriginalValue == )
+                    // нет ренэйминга - сделать как в группах с <Add new connection>
+
                     _configRepository.SaveConnectionString(newName, SelectedValue);
-                    //TODO
-                    //UpdateNameInMeta();
+                    _storageRepository.ChangeConnectionNameInMetadata(SelectedGroupName, _currentItemOriginalValue, newName);
                     AddConnectionStrings();
                     SelectConnectionString(newName); // works for a new item
                     _currentGroupBox.SetFocus();
@@ -403,7 +407,7 @@ namespace DbChecker
 
             startLabel.Text = $"Elapsed time: {(DateTime.Now - startedAt):g}";
             SelectedScript.ConnectionString = SelectedConnectionStringName;
-            _storageRepository.UpdateMetadata(SelectedGroupName, SelectedScript);
+            _storageRepository.UpdateScriptInMetadata(SelectedGroupName, SelectedScript);
         }
 
         private void MainWindow_KeyUp(object sender, KeyEventArgs e)

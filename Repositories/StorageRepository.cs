@@ -76,6 +76,7 @@ namespace DbChecker.Repositories
             if (File.Exists(Path.Combine(path, $"{scriptName}.sql")))
             {
                 RenameScript(groupName, scriptName, newScriptName);
+                ChangeScriptNameInMetadata(groupName, scriptName, newScriptName);
             }
 
             SaveScript(groupName, newScriptName, script);
@@ -93,7 +94,7 @@ namespace DbChecker.Repositories
         {
             var path = EnsureDirectory(groupName);
 
-            UpdateMetadata(groupName, script);
+            UpdateScriptInMetadata(groupName, script);
             _fileRepository.WriteFile(Path.Combine(path, $"{script.Name}.sql"), script.Text);
         }
 
@@ -126,14 +127,46 @@ namespace DbChecker.Repositories
             }
         }
 
-        public void UpdateMetadata(string groupName, Script script)
+        public void UpdateScriptInMetadata(string groupName, Script script)
         {
             var path = GetGroupPath(groupName);
             var jsonFile = Path.Combine(path, _configRepository.MetaFilePath);
             var currentMeta = ReadMetadata(jsonFile);
             var scriptMeta = currentMeta.Scripts.Single(s => s.Name.Equals(script.Name));
             scriptMeta.ConnectionString = script.ConnectionString;
-            _fileRepository.WriteFile(jsonFile, JsonConvert.SerializeObject(currentMeta));
+            WriteMetadata(jsonFile, currentMeta);
+        }
+
+        public void ChangeScriptNameInMetadata(string groupName, string oldName, string newName)
+        {
+            var path = EnsureDirectory(groupName);
+            var jsonFile = Path.Combine(path, _configRepository.MetaFilePath);
+            var group = ReadMetadata(jsonFile);
+
+            var matches = group.Scripts.Where(s => s.Name.Equals(oldName));
+
+            foreach (var script in matches)
+            {
+                script.Name = newName;
+            }
+
+            WriteMetadata(jsonFile, group);
+        }
+
+        public void ChangeConnectionNameInMetadata(string groupName, string oldName, string newName)
+        {
+            var path = EnsureDirectory(groupName);
+            var jsonFile = Path.Combine(path, _configRepository.MetaFilePath);
+            var group = ReadMetadata(jsonFile);
+
+            var matches = group.Scripts.Where(s => s.ConnectionString.Equals(oldName));
+
+            foreach (var script in matches)
+            {
+                script.ConnectionString = newName;
+            }
+
+            WriteMetadata(jsonFile, group);
         }
 
         private Group ReadOrCreateGroupWithMeta(string groupName)
@@ -153,23 +186,41 @@ namespace DbChecker.Repositories
                 group = ReadMetadata(jsonFile);
             }
 
+            // files in folder
             var fileNames = _fileRepository.FindFiles(path, "*.sql")
                 .OrderBy(f => f.CreationTime)
                 .Select(f => Path.GetFileNameWithoutExtension(f.Name))
                 .ToList();
 
+            // files in meta, deleted from folder
+            var deletedFiles = group.Scripts.Select(s => s.Name)
+                .Except(fileNames)
+                .ToList();
+
+            // files in folder, missed in meta
             var missingFiles = fileNames
                 .Except(group.Scripts.Select(s => s.Name))
                 .ToList();
 
-            if (newGroup || missingFiles.Any())
+            if (newGroup || missingFiles.Any() || deletedFiles.Any())
             {
-                foreach (var file in missingFiles)
+                if (newGroup || missingFiles.Any())
                 {
-                    group.Scripts.Add(new Script { Name = Path.GetFileNameWithoutExtension(file) });
+                    foreach (var file in missingFiles)
+                    {
+                        group.Scripts.Add(new Script {Name = Path.GetFileNameWithoutExtension(file)});
+                    }
                 }
 
-                _fileRepository.WriteFile(jsonFile, JsonConvert.SerializeObject(group));
+                if (deletedFiles.Any())
+                {
+                    foreach (var file in deletedFiles)
+                    {
+                        group.Scripts.Remove(group.Scripts.Single(s => s.Name.Equals(file)));
+                    }
+                }
+
+                WriteMetadata(jsonFile, group);
             }
 
             foreach (var script in group.Scripts)
@@ -185,6 +236,11 @@ namespace DbChecker.Repositories
         {
             var json = _fileRepository.ReadFile(jsonFile);
             return JsonConvert.DeserializeObject<Group>(json);
+        }
+
+        private void WriteMetadata(string jsonFile, Group group)
+        {
+            _fileRepository.WriteFile(jsonFile, JsonConvert.SerializeObject(group));
         }
 
         private void GetContent(string path, Script script)
@@ -222,9 +278,10 @@ namespace DbChecker.Repositories
         void SaveScript(string groupName, Script script);
         void DeleteScript(string groupName, string script);
         void DeleteGroup(string groupName);
-        void UpdateMetadata(string groupName, Script script);
+        void UpdateScriptInMetadata(string groupName, Script script);
         void RenameScript(string groupName, string scriptName, string newScriptName);
         void SaveOrRenameScript(string groupName, string scriptName, string newScriptName, string script);
         void CreateOrRenameGroup(string newName, string oldName = null);
+        void ChangeConnectionNameInMetadata(string groupName, string oldName, string newName);
     }
 }

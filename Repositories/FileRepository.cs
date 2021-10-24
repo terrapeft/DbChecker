@@ -28,7 +28,8 @@ namespace DbChecker.Repositories
 
             if (!File.Exists(path))
             {
-                File.CreateText(path).Close();
+                //File.CreateText(path).Close();
+                return new List<string>();
             }
 
             return File.ReadLines(path);
