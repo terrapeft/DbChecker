@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace DbChecker.Models
+namespace BackofficeTools.Models
 {
     public interface IScript
     {

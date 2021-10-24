@@ -2,7 +2,7 @@
 using System.Data;
 using System.Windows.Forms;
 
-namespace DbChecker.Controls
+namespace BackofficeTools.Controls
 {
     public partial class ResultsBox : UserControl
     {

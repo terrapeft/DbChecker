@@ -2,9 +2,8 @@
 using System.Globalization;
 using System.IO;
 using CsvHelper;
-using Microsoft.VisualBasic.FileIO;
 
-namespace DbChecker
+namespace BackofficeTools
 {
     public class CsvFileReader
     {

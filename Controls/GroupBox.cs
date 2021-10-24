@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using DbChecker.Models;
-using DbChecker.Repositories;
+using BackofficeTools.Models;
+using BackofficeTools.Repositories;
 using FastColoredTextBoxNS;
-using Group = DbChecker.Models.Group;
+using Group = BackofficeTools.Models.Group;
 
-namespace DbChecker.Controls
+namespace BackofficeTools.Controls
 {
     public class GroupBox
     {

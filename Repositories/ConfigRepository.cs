@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Configuration;
-using System.Drawing;
+﻿using System.Configuration;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using System.Xml.XPath;
-using DbChecker.Models;
+using BackofficeTools.Models;
 
-namespace DbChecker.Repositories
+namespace BackofficeTools.Repositories
 {
     public class ConfigRepository : IConfigRepository
     {
@@ -34,6 +30,7 @@ namespace DbChecker.Repositories
                 var lastGroupName = doc.XPathSelectElement("//appSettings/add[@key='lastGroupName']");
                 lastGroupName?.SetAttributeValue("value", value);
                 doc.Save(ConfigurationManager.AppSettings.Get("config"));
+                ConfigurationManager.RefreshSection("appSettings");
             }
         }
 
@@ -50,6 +47,7 @@ namespace DbChecker.Repositories
                 var lastScriptName = doc.XPathSelectElement("//appSettings/add[@key='lastScriptName']");
                 lastScriptName?.SetAttributeValue("value", value);
                 doc.Save(ConfigurationManager.AppSettings.Get("config"));
+                ConfigurationManager.RefreshSection("appSettings");
             }
         }
 
@@ -85,6 +83,20 @@ namespace DbChecker.Repositories
             }
 
             doc.Save("connections.config");
+            ConfigurationManager.RefreshSection("connectionStrings");
+        }
+
+        public void RenameConnectionString(string newName, string oldName)
+        {
+            var doc = XDocument.Load("connections.config");
+            var connStrs = doc.XPathSelectElement("//connectionStrings");
+            var connStr = doc.XPathSelectElement($"//connectionStrings/add[@name='{oldName}']");
+
+            if (connStr == null) return;
+
+            connStr.Attribute("name").Value = newName;
+            doc.Save("connections.config");
+            ConfigurationManager.RefreshSection("connectionStrings");
         }
 
         public void DeleteConnectionString(string name)
@@ -94,6 +106,7 @@ namespace DbChecker.Repositories
             connStr?.Remove();
 
             doc.Save("connections.config");
+            ConfigurationManager.RefreshSection("connectionStrings");
         }
 
         public Snippet[] Snippets
@@ -136,6 +149,7 @@ namespace DbChecker.Repositories
         ConnectionStringSettings[] ConnectionStrings { get; }
         Snippet[] Snippets { get; }
         void SaveConnectionString(string name, string value);
+        void RenameConnectionString(string newName, string oldName);
         void DeleteConnectionString(string name);
     }
 }

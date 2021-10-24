@@ -1,6 +1,6 @@
 ﻿using System.Windows.Forms;
 
-namespace DbChecker.Controls
+namespace BackofficeTools.Controls
 {
     public class GridViewPage
     {

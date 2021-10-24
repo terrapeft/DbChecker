@@ -1,4 +1,4 @@
-﻿namespace DbChecker.Controls
+﻿namespace BackofficeTools.Controls
 {
     partial class ResultsBox
     {

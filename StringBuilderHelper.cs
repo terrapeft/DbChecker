@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace DbChecker
+namespace BackofficeTools
 {
     public static class StringBuilderHelper
     {

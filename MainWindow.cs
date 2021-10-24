@@ -7,17 +7,16 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
-using DbChecker.Controls;
-using DbChecker.Models;
-using DbChecker.Repositories;
-using GroupBox = DbChecker.Controls.GroupBox;
+using BackofficeTools.Models;
+using BackofficeTools.Repositories;
+using GroupBox = BackofficeTools.Controls.GroupBox;
 
-namespace DbChecker
+namespace BackofficeTools
 {
     public partial class MainWindow : Form
     {
         public const string NewGroupName = "<Add new group>";
-        public const string NewConnectionString = "<Add new connection>";
+        public const string NewConnectionStringName = "<Add new connection>";
 
         private readonly IStorageRepository _storageRepository;
         private readonly IConfigRepository _configRepository;
@@ -25,6 +24,7 @@ namespace DbChecker
 
         private ItemType _currentItemType;
         private string _currentItemOriginalValue;
+        private string _currentItemOriginalName;
         private DateTime _prevClick;
         private GroupBox _currentGroupBox;
         private CancellationTokenSource cts;
@@ -102,7 +102,13 @@ namespace DbChecker
             }
         }
 
-        private void StartRenaming(string text, ItemType type)
+        private void ConfigureNameEditing(string text, ItemType itemType)
+        {
+            _currentItemOriginalName = text;
+            _currentItemType = itemType;
+        }
+
+        private void ConfigureValueEditing(string text, ItemType type)
         {
             _currentItemType = type;
             _currentItemOriginalValue = text;
@@ -209,7 +215,7 @@ namespace DbChecker
 
         private void GroupBoxOnRenamingScript(object sender, string e)
         {
-            StartRenaming(e, ItemType.Script);
+            ConfigureValueEditing(e, ItemType.Script);
         }
 
         private void GroupBoxOnSelectingTab(object sender, string e)
@@ -228,7 +234,7 @@ namespace DbChecker
         {
             connStrComboBox.Items.Clear();
             connStrComboBox.Text = string.Empty;
-            connStrComboBox.Items.Add(new ConnectionStringSettings(NewConnectionString, null));
+            connStrComboBox.Items.Add(new ConnectionStringSettings(NewConnectionStringName, null));
             connStrComboBox.Items.AddRange(_configRepository.ConnectionStrings);
             connStrComboBox.DisplayMember = "Name";
             connStrComboBox.Focus();
@@ -240,14 +246,14 @@ namespace DbChecker
 
         private void connStrComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            StartRenaming(SelectedConnectionString, ItemType.ConnectionString);
+            ConfigureValueEditing(SelectedConnectionString, ItemType.ConnectionString);
         }
 
         private void groupNamesComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (SelectedGroupName == NewGroupName)
             {
-                StartRenaming(SelectedGroupName, ItemType.Group);
+                ConfigureValueEditing(SelectedGroupName, ItemType.Group);
             }
             else
             {
@@ -256,49 +262,55 @@ namespace DbChecker
             }
         }
 
-        private void groupNamesComboBox_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (DateTime.Now.AddMilliseconds(-500) < _prevClick)
-            {
-                StartRenaming(SelectedGroupName, ItemType.Group);
-            }
+        //private void groupNamesComboBox_MouseClick(object sender, MouseEventArgs e)
+        //{
+        //    if (DateTime.Now.AddMilliseconds(-500) < _prevClick)
+        //    {
+        //        StartRenaming(SelectedGroupName, ItemType.Group);
+        //    }
 
-            _prevClick = DateTime.Now;
-        }
+        //    _prevClick = DateTime.Now;
+        //}
 
-        private void connStrComboBox_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (DateTime.Now.AddMilliseconds(-500) < _prevClick)
-            {
-                StartRenaming(SelectedConnectionString, ItemType.ConnectionString);
-            }
+        //private void connStrComboBox_MouseClick(object sender, MouseEventArgs e)
+        //{
+        //    if (DateTime.Now.AddMilliseconds(-500) < _prevClick)
+        //    {
+        //        StartRenaming(SelectedConnectionString, ItemType.ConnectionString);
+        //    }
 
-            _prevClick = DateTime.Now;
-        }
+        //    _prevClick = DateTime.Now;
+        //}
 
         private void saveButton_Click(object sender, EventArgs e)
         {
             switch (_currentItemType)
             {
-                case ItemType.ConnectionString:
+                case ItemType.ConnectionStringName:
+                    if (SelectedConnectionStringName == NewConnectionStringName) return;
                     var newName = SelectedConnectionStringName;
-
-                    //if (_currentItemOriginalValue == )
-                    // нет ренэйминга - сделать как в группах с <Add new connection>
-
-                    _configRepository.SaveConnectionString(newName, SelectedValue);
-                    _storageRepository.ChangeConnectionNameInMetadata(SelectedGroupName, _currentItemOriginalValue, newName);
+                    _configRepository.RenameConnectionString(newName, _currentItemOriginalName);
+                    _storageRepository.ChangeConnectionNameInMetadata(newName, _currentItemOriginalName);
                     AddConnectionStrings();
-                    SelectConnectionString(newName); // works for a new item
-                    _currentGroupBox.SetFocus();
+                    SelectConnectionString(newName);
+                    break;
+                case ItemType.ConnectionString:
+                    if (SelectedConnectionStringName == NewConnectionStringName) return;
+
+                    _configRepository.SaveConnectionString(SelectedConnectionStringName, SelectedValue);
+                    //_storageRepository.ChangeConnectionNameInMetadata(SelectedConnectionStringName, _currentItemOriginalName);
+                    AddConnectionStrings();
+                    SelectConnectionString(SelectedConnectionStringName); // works for a new item
+                    _currentGroupBox?.SetFocus();
                     break;
 
                 case ItemType.Group:
-                    _storageRepository.CreateOrRenameGroup(SelectedValue, _currentItemOriginalValue);
+                    if (SelectedGroupName == NewGroupName) return;
+
+                    _storageRepository.CreateOrRenameGroup(SelectedGroupName, _currentItemOriginalName);
                     AddGroupNames(_storageRepository.ReadGroupNames());
-                    SelectGroupName(SelectedValue);
-                    StartRenaming(SelectedConnectionString, ItemType.ConnectionString); // works for the current item, which doesn't generate the SelectedIndexChanged event
-                    _currentGroupBox.SetFocus();
+                    SelectGroupName(SelectedGroupName);
+                    _currentGroupBox?.SetFocus();
                     break;
 
                 case ItemType.Script:
@@ -310,8 +322,6 @@ namespace DbChecker
 
                     _storageRepository.SaveOrRenameScript(SelectedGroupName, _currentItemOriginalValue, SelectedValue, SelectedScriptSource);
                     _currentGroupBox.TabText = SelectedValue;
-
-                    StartRenaming(SelectedConnectionString, ItemType.ConnectionString); // works for the current item, which doesn't generate the SelectedIndexChanged event
                     _currentGroupBox.SetFocus();
                     break;
             }
@@ -323,6 +333,7 @@ namespace DbChecker
             {
                 case ItemType.ConnectionString:
                     _configRepository.DeleteConnectionString(SelectedConnectionStringName);
+                    SelectedValue = null;
                     AddConnectionStrings();
                     break;
 
@@ -330,12 +341,10 @@ namespace DbChecker
                     _storageRepository.DeleteGroup(SelectedGroupName);
                     AddGroupNames(_storageRepository.ReadGroupNames());
                     SelectGroupName(_configRepository.SelectedGroup);
-                    StartRenaming(SelectedConnectionString, ItemType.ConnectionString); // works for the current item, which doesn't generate the SelectedIndexChanged event
                     break;
 
                 case ItemType.Script:
                     GroupBoxOnDeletingScript(this, _currentGroupBox.TabText);
-                    StartRenaming(SelectedConnectionString, ItemType.ConnectionString); // works for the current item, which doesn't generate the SelectedIndexChanged event
                     break;
             }
         }
@@ -422,7 +431,6 @@ namespace DbChecker
                     }
                 }
 
-                StartRenaming(SelectedConnectionString, ItemType.ConnectionString);
                 _currentGroupBox.SetFocus();
             }
 
@@ -491,9 +499,38 @@ namespace DbChecker
         }
 
 
-        #endregion
+        //private void MakeComboboxReadOnly(object sender, KeyPressEventArgs e)
+        //{
+        //    // Doesn't allow to edit and at the same time allows my emulated double click
+        //    e.Handled = true;
+        //}
 
         #endregion
 
+        #endregion
+
+        private void groupNamesComboBox_Enter(object sender, EventArgs e)
+        {
+            ConfigureNameEditing(SelectedGroupName, ItemType.Group);
+        }
+
+        private void connStrComboBox_Enter(object sender, EventArgs e)
+        {
+            ConfigureNameEditing(SelectedConnectionStringName, ItemType.ConnectionStringName);
+        }
+
+        private void ComboBox_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                saveButton_Click(sender, null);
+            }
+        }
+
+        private void valueTextBox_Enter(object sender, EventArgs e)
+        {
+            if (_currentItemType == ItemType.ConnectionStringName)
+                _currentItemType = ItemType.ConnectionString;
+        }
     }
 }

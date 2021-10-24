@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace DbChecker.Repositories
+namespace BackofficeTools.Repositories
 {
     public class CsvRepository
     {

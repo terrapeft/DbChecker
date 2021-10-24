@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{1CE4634A-8346-4DC7-922A-7E1D4BEC93A3}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>DbChecker</RootNamespace>
-    <AssemblyName>DbChecker</AssemblyName>
+    <RootNamespace>BackofficeTools</RootNamespace>
+    <AssemblyName>BackofficeTools</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -143,8 +143,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>rmdir "c:\work\DbChecker" /S /Q
-mkdir "c:\work\DbChecker"
-copy "$(TargetDir)*.*" "c:\work\DbChecker\" /Y</PostBuildEvent>
+    <PostBuildEvent>rmdir "c:\work\BackofficeTools" /S /Q
+mkdir "c:\work\BackofficeTools"
+copy "$(TargetDir)*.*" "c:\work\BackofficeTools\" /Y</PostBuildEvent>
   </PropertyGroup>
 </Project>

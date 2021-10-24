@@ -2,14 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using DbChecker.Controls;
-using DbChecker.Models;
+using BackofficeTools.Models;
 using Newtonsoft.Json;
 
-namespace DbChecker.Repositories
+namespace BackofficeTools.Repositories
 {
     public class SqlRepository : IStorageRepository
     {
@@ -139,6 +135,10 @@ namespace DbChecker.Repositories
 
         public void ChangeScriptNameInMetadata(string groupName, string oldName, string newName)
         {
+            if (groupName == null) return;
+            if (oldName == null) return;
+            if (newName == null) return;
+
             var path = EnsureDirectory(groupName);
             var jsonFile = Path.Combine(path, _configRepository.MetaFilePath);
             var group = ReadMetadata(jsonFile);
@@ -153,20 +153,28 @@ namespace DbChecker.Repositories
             WriteMetadata(jsonFile, group);
         }
 
-        public void ChangeConnectionNameInMetadata(string groupName, string oldName, string newName)
+        public void ChangeConnectionNameInMetadata(string newName, string oldName)
         {
-            var path = EnsureDirectory(groupName);
-            var jsonFile = Path.Combine(path, _configRepository.MetaFilePath);
-            var group = ReadMetadata(jsonFile);
+            if (oldName == null) return;
+            if (newName == null) return;
 
-            var matches = group.Scripts.Where(s => s.ConnectionString.Equals(oldName));
-
-            foreach (var script in matches)
+            foreach (var path in Directory.GetDirectories(_configRepository.SqlPath))
             {
-                script.ConnectionString = newName;
-            }
+                var jsonFile = Path.Combine(path, _configRepository.MetaFilePath);
+                var group = ReadMetadata(jsonFile);
 
-            WriteMetadata(jsonFile, group);
+                if (group == null) continue;
+
+                var matches = group.Scripts
+                    .Where(s => s.ConnectionString != null && s.ConnectionString.Equals(oldName));
+
+                foreach (var script in matches)
+                {
+                    script.ConnectionString = newName;
+                }
+
+                WriteMetadata(jsonFile, group);
+            }
         }
 
         private Group ReadOrCreateGroupWithMeta(string groupName)
@@ -282,6 +290,6 @@ namespace DbChecker.Repositories
         void RenameScript(string groupName, string scriptName, string newScriptName);
         void SaveOrRenameScript(string groupName, string scriptName, string newScriptName, string script);
         void CreateOrRenameGroup(string newName, string oldName = null);
-        void ChangeConnectionNameInMetadata(string groupName, string oldName, string newName);
+        void ChangeConnectionNameInMetadata(string newName, string oldName);
     }
 }

@@ -3,10 +3,10 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Threading;
 using System.Threading.Tasks;
-using DbChecker.Models;
+using BackofficeTools.Models;
 using Timer = System.Timers.Timer;
 
-namespace DbChecker
+namespace BackofficeTools
 {
     public class SqlRunner
     {
