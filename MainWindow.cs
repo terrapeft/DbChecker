@@ -298,11 +298,10 @@ namespace BackofficeTools
                     break;
                 case ItemType.ConnectionString:
                     if (SelectedConnectionStringName == NewConnectionStringName) return;
-
-                    _configRepository.SaveConnectionString(SelectedConnectionStringName, SelectedValue);
-                    //_storageRepository.ChangeConnectionNameInMetadata(SelectedConnectionStringName, _currentItemOriginalName);
+                    var connName = SelectedConnectionStringName;
+                    _configRepository.SaveConnectionString(connName, SelectedValue);
                     AddConnectionStrings();
-                    SelectConnectionString(SelectedConnectionStringName); // works for a new item
+                    SelectConnectionString(connName); // works for a new item
                     _currentGroupBox?.SetFocus();
                     break;
 
