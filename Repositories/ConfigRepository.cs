@@ -1,4 +1,5 @@
-﻿using System.Configuration;
+﻿using System;
+using System.Configuration;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
@@ -26,10 +27,10 @@ namespace BackofficeTools.Repositories
             }
             set
             {
-                var doc = XDocument.Load(ConfigurationManager.AppSettings.Get("config"));
+                var doc = XDocument.Load(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile);
                 var lastGroupName = doc.XPathSelectElement("//appSettings/add[@key='lastGroupName']");
                 lastGroupName?.SetAttributeValue("value", value);
-                doc.Save(ConfigurationManager.AppSettings.Get("config"));
+                doc.Save(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile);
                 ConfigurationManager.RefreshSection("appSettings");
             }
         }
@@ -43,10 +44,10 @@ namespace BackofficeTools.Repositories
             }
             set
             {
-                var doc = XDocument.Load(ConfigurationManager.AppSettings.Get("config"));
+                var doc = XDocument.Load(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile);
                 var lastScriptName = doc.XPathSelectElement("//appSettings/add[@key='lastScriptName']");
                 lastScriptName?.SetAttributeValue("value", value);
-                doc.Save(ConfigurationManager.AppSettings.Get("config"));
+                doc.Save(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile);
                 ConfigurationManager.RefreshSection("appSettings");
             }
         }

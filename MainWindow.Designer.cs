@@ -58,8 +58,8 @@ namespace BackofficeTools
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.queryAndResultsSplitContainer = new System.Windows.Forms.SplitContainer();
-            this.resultsBox = new BackofficeTools.Controls.ResultsBox();
             this.messageLabel = new System.Windows.Forms.Label();
+            this.resultsBox = new BackofficeTools.Controls.ResultsBox();
             this.menuStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
             this.resultsGridContextMenuStrip.SuspendLayout();
@@ -315,16 +315,6 @@ namespace BackofficeTools
             this.queryAndResultsSplitContainer.SplitterWidth = 5;
             this.queryAndResultsSplitContainer.TabIndex = 14;
             // 
-            // resultsBox
-            // 
-            this.resultsBox.ContextMenuStrip = this.resultsGridContextMenuStrip;
-            this.resultsBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.resultsBox.Location = new System.Drawing.Point(0, 0);
-            this.resultsBox.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.resultsBox.Name = "resultsBox";
-            this.resultsBox.Size = new System.Drawing.Size(1379, 392);
-            this.resultsBox.TabIndex = 1;
-            // 
             // messageLabel
             // 
             this.messageLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
@@ -335,6 +325,16 @@ namespace BackofficeTools
             this.messageLabel.Size = new System.Drawing.Size(100, 17);
             this.messageLabel.TabIndex = 15;
             this.messageLabel.Text = "messageLabel";
+            // 
+            // resultsBox
+            // 
+            this.resultsBox.ContextMenuStrip = this.resultsGridContextMenuStrip;
+            this.resultsBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.resultsBox.Location = new System.Drawing.Point(0, 0);
+            this.resultsBox.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.resultsBox.Name = "resultsBox";
+            this.resultsBox.Size = new System.Drawing.Size(1379, 392);
+            this.resultsBox.TabIndex = 1;
             // 
             // MainWindow
             // 

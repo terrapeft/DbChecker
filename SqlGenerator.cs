@@ -15,11 +15,10 @@ namespace BackofficeTools
             foreach (DataRow row in dt.Rows)
             {
                 var values = row.ItemArray
-                    .Cast<object>()
                     .Select(c => c.ToString())
-                    .Aggregate((i, k) => $"'{i}', '{k}'");
+                    .Aggregate((i, k) => $"{i}', '{k}");
 
-                sb.Append($"{(isFirstRow ? "":",\n")}\t({values})");
+                sb.Append($"{(isFirstRow ? "":",\n")}\t('{values}')");
                 isFirstRow = false;
             }
 

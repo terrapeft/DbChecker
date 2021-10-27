@@ -253,7 +253,9 @@ namespace BackofficeTools
         {
             if (SelectedGroupName == NewGroupName)
             {
-                ConfigureValueEditing(SelectedGroupName, ItemType.Group);
+                ConfigureNameEditing(SelectedGroupName, ItemType.Group);
+                groupNamesComboBox.SelectAll();
+                groupNamesComboBox.Focus();
             }
             else
             {
@@ -306,10 +308,10 @@ namespace BackofficeTools
 
                 case ItemType.Group:
                     if (SelectedGroupName == NewGroupName) return;
-
-                    _storageRepository.CreateOrRenameGroup(SelectedGroupName, _currentItemOriginalName);
+                    var newGName = SelectedGroupName;
+                    _storageRepository.CreateOrRenameGroup(newGName, _currentItemOriginalName);
                     AddGroupNames(_storageRepository.ReadGroupNames());
-                    SelectGroupName(SelectedGroupName);
+                    SelectGroupName(newGName);
                     _currentGroupBox?.SetFocus();
                     break;
 

@@ -192,6 +192,12 @@ namespace BackofficeTools.Repositories
             else
             {
                 group = ReadMetadata(jsonFile);
+
+                if (group == null)
+                {
+                    group = new Group { Name = groupName };
+                    newGroup = true;
+                }
             }
 
             // files in folder
